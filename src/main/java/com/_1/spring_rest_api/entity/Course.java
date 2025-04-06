@@ -30,6 +30,12 @@ public class Course extends BaseTimeEntity {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "course")
     private List<Week> weeks = new ArrayList<>();
+
+    public Course(Long userId, String title, String description) {
+        this.id = userId;
+        this.title = title;
+        this.description = description;
+    }
 }
