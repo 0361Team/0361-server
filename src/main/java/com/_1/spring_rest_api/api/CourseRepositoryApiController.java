@@ -19,7 +19,7 @@ public class CourseRepositoryApiController {
     private final CourseService courseService;
 
     @PostMapping
-    public ResponseEntity<Long> createCourse(
+    public ResponseEntity<CreateCourseResonse> createCourse(
             @RequestBody CreateCourseRequest request) {
         Long courseId = courseService.createCourse(request.getUserId(), request.getTitle(), request.getDescription());
         URI location = ServletUriComponentsBuilder
@@ -27,32 +27,48 @@ public class CourseRepositoryApiController {
                 .path("/{id}")
                 .buildAndExpand(courseId)
                 .toUri();
-        return ResponseEntity.created(location).body(courseId);
+        return ResponseEntity.created(location).body(new CreateCourseResonse(courseId));
     }
 
     @DeleteMapping("/{courseId}")
     public ResponseEntity<Void> deleteCourse(
             @PathVariable Long courseId) {
-        courseService.deleteCourse(courseId);
+        try {
+            courseService.deleteCourse(courseId);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/course-id/{courseId}")
-    public ResponseEntity<Course> getCourseById(
+    @GetMapping("/{courseId}")
+    public ResponseEntity<CourseResponse> getCourseById(
             @PathVariable Long courseId) {
-        return ResponseEntity.ok(courseService.getCourseById(courseId));
+        try {
+            return ResponseEntity.ok(courseService.getCourseById(courseId).toCourseResponse());
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/user/{userId}/courses")
-    public ResponseEntity<List<Course>> getUserCourseList(
+    public ResponseEntity<List<CourseResponse>> getUserCourseList(
             @PathVariable Long userId) {
-        return ResponseEntity.ok(courseService.getCoursesByUserId(userId));
+        List<Course> courseList = courseService.getCoursesByUserId(userId);
+        List<CourseResponse> courseResponseList = courseList.stream()
+                .map(Course::toCourseResponse)
+                .toList();
+        return ResponseEntity.ok(courseResponseList);
     }
 
-    @GetMapping("/course/{courseId}/weeks")
-    public ResponseEntity<List<Week>> getCourseWeekList(
+    @GetMapping("/{courseId}/weeks")
+    public ResponseEntity<List<WeekResponse>> getCourseWeekList(
             @PathVariable Long courseId
     ) {
-        return ResponseEntity.ok(courseService.getCourseWeeksByCourseId(courseId));
+        List<Week> weekList = courseService.getCourseWeeksByCourseId(courseId);
+        List<WeekResponse> weekResponseList = weekList.stream()
+                .map(Week::toWeekResponse)
+                .toList();
+        return ResponseEntity.ok(weekResponseList);
     }
 }

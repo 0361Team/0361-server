@@ -1,5 +1,6 @@
 package com._1.spring_rest_api.entity;
 
+import com._1.spring_rest_api.api.WeekResponse;
 import com._1.spring_rest_api.entity.base.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -48,5 +49,9 @@ public class Week extends BaseTimeEntity {
         this.id = id;
         this.title = title;
         this.course = course;
+    }
+
+    public WeekResponse toWeekResponse() {
+        return new WeekResponse(id, course.toCourseResponse(), title);
     }
 }

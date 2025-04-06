@@ -1,12 +1,15 @@
 package com._1.spring_rest_api.entity;
 
 
+import com._1.spring_rest_api.api.CourseResponse;
+import com._1.spring_rest_api.api.WeekResponse;
 import com._1.spring_rest_api.entity.base.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "COURSE")
@@ -45,5 +48,12 @@ public class Course extends BaseTimeEntity {
         this.creator = creator;
         this.title = title;
         this.description = description;
+    }
+
+    public CourseResponse toCourseResponse() {
+        List<WeekResponse> weekResponses = weeks.stream()
+                .map(Week::toWeekResponse)
+                .collect(Collectors.toList());
+        return new CourseResponse(id, title, description, weekResponses);
     }
 }
