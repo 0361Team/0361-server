@@ -3,8 +3,7 @@ package com._1.spring_rest_api.entity;
 
 import com._1.spring_rest_api.entity.base.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +12,7 @@ import java.util.List;
 @Table(name = "COURSE")
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Course extends BaseTimeEntity {
 
     @Id
@@ -30,11 +30,19 @@ public class Course extends BaseTimeEntity {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
+    @Setter
     @OneToMany(mappedBy = "course")
     private List<Week> weeks = new ArrayList<>();
 
-    public Course(Long userId, String title, String description) {
-        this.id = userId;
+    public Course(User creator, String title, String description) {
+        this.creator = creator;
+        this.title = title;
+        this.description = description;
+    }
+
+    public Course(Long id, User creator, String title, String description) {
+        this.id = id;
+        this.creator = creator;
         this.title = title;
         this.description = description;
     }

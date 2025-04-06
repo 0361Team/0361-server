@@ -1,6 +1,7 @@
 package com._1.spring_rest_api.service;
 
 import com._1.spring_rest_api.entity.Course;
+import com._1.spring_rest_api.entity.User;
 import com._1.spring_rest_api.entity.Week;
 import com._1.spring_rest_api.repository.CourseRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -17,13 +18,14 @@ public class CourseService {
 
     private final CourseRepository courseRepository;
 
-    private Long createCourse(
+    protected Long createCourse(
             Long userId, String title, String description) {
-        Course course = courseRepository.save(new Course(userId, title, description));
+        // User entity 조회 후 넣어야 함. - 임시로 User() 사용
+        Course course = courseRepository.save(new Course(new User(userId), title, description));
         return course.getId();
     }
 
-    private void deleteCourse(Long courseId) {
+    protected void deleteCourse(Long courseId) {
         if (!courseRepository.existsById(courseId)) {
             throw new EntityNotFoundException("Course not found with id: " + courseId);
         }
@@ -32,7 +34,8 @@ public class CourseService {
 
     @Transactional(readOnly = true)
     public Course getCourseById(Long courseId) {
-        return courseRepository.findById(courseId).orElse(null);
+        return courseRepository.findById(courseId).orElseThrow(
+                () -> new EntityNotFoundException("Course not found with id: " + courseId));
     }
 
     @Transactional(readOnly = true)

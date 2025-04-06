@@ -2,6 +2,8 @@ package com._1.spring_rest_api.entity;
 
 import com._1.spring_rest_api.entity.base.BaseTimeEntity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +14,7 @@ import java.util.List;
 @Table(name = "WEEK")
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Week extends BaseTimeEntity {
 
     @Id
@@ -40,4 +43,10 @@ public class Week extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "week", cascade = CascadeType.ALL)
     private List<QuizWeekMapping> quizWeekMappings = new ArrayList<>();
+
+    public Week(Long id, String title, Course course) {
+        this.id = id;
+        this.title = title;
+        this.course = course;
+    }
 }
