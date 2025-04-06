@@ -4,6 +4,7 @@ import com._1.spring_rest_api.entity.base.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
 @Entity
 @Table(name = "UserTB")
 @Getter
+@Setter
 @NoArgsConstructor
 public class User extends BaseTimeEntity {
 
@@ -38,4 +40,8 @@ public class User extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserAnswer> userAnswers = new ArrayList<>();
+
+    public User(Long id) {
+        this.id = id;
+    }
 }

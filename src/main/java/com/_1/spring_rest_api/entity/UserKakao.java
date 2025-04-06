@@ -5,12 +5,14 @@ import com._1.spring_rest_api.entity.base.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "USER_KAKAO")
 @Getter
+@Setter
 @NoArgsConstructor
 public class UserKakao extends BaseTimeEntity {
 
