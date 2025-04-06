@@ -18,14 +18,14 @@ public class CourseService {
 
     private final CourseRepository courseRepository;
 
-    protected Long createCourse(
+    public Long createCourse(
             Long userId, String title, String description) {
         // User entity 조회 후 넣어야 함. - 임시로 User() 사용
         Course course = courseRepository.save(new Course(new User(userId), title, description));
         return course.getId();
     }
 
-    protected void deleteCourse(Long courseId) {
+    public void deleteCourse(Long courseId) {
         if (!courseRepository.existsById(courseId)) {
             throw new EntityNotFoundException("Course not found with id: " + courseId);
         }
@@ -49,5 +49,4 @@ public class CourseService {
                 .orElseThrow(() -> new EntityNotFoundException("Course not found with id: " + courseId));
         return course.getWeeks();
     }
-
 }
