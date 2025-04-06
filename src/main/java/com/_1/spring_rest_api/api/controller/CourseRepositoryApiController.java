@@ -1,5 +1,9 @@
-package com._1.spring_rest_api.api;
+package com._1.spring_rest_api.api.controller;
 
+import com._1.spring_rest_api.api.dto.CourseResponse;
+import com._1.spring_rest_api.api.dto.CreateCourseRequest;
+import com._1.spring_rest_api.api.dto.CreateCourseResonse;
+import com._1.spring_rest_api.api.dto.WeekResponse;
 import com._1.spring_rest_api.entity.Course;
 import com._1.spring_rest_api.entity.Week;
 import com._1.spring_rest_api.service.CourseService;

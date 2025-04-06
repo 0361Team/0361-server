@@ -1,8 +1,8 @@
 package com._1.spring_rest_api.entity;
 
 
-import com._1.spring_rest_api.api.CourseResponse;
-import com._1.spring_rest_api.api.WeekResponse;
+import com._1.spring_rest_api.api.dto.CourseResponse;
+import com._1.spring_rest_api.api.dto.WeekResponse;
 import com._1.spring_rest_api.entity.base.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
