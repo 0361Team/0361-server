@@ -44,6 +44,8 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 	testImplementation 'com.h2database:h2'
+	// Spring Security Test 의존성 추가
+	testImplementation 'org.springframework.security:spring-security-test'
 }
 
 tasks.named('test') {
