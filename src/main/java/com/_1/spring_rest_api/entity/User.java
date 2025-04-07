@@ -38,4 +38,8 @@ public class User extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserAnswer> userAnswers = new ArrayList<>();
+
+    public User(Long id) {
+        this.id = id;
+    }
 }
