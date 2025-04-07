@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class CreateCourseResonse {
+public class CreateCourseResponse {
 
     private Long id;
 }
