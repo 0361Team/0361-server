@@ -12,6 +12,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @Profile("test") //테스트 프로필에서만 활성화
 public class TestSecurityConfig {
 
+    /*
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -22,5 +23,5 @@ public class TestSecurityConfig {
                 .cors(cors -> cors.disable()); // CORS 비활성화
 
         return http.build();
-    }
+    }*/
 }
