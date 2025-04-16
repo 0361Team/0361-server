@@ -23,7 +23,7 @@ public class CourseRepositoryApiController {
     private final CourseService courseService;
 
     @PostMapping
-    public ResponseEntity<CreateCourseResonse> createCourse(
+    public ResponseEntity<CreateCourseResponse> createCourse(
             @RequestBody CreateCourseRequest request) {
         Long courseId = courseService.createCourse(request.getUserId(), request.getTitle(), request.getDescription());
         URI location = ServletUriComponentsBuilder
@@ -31,7 +31,7 @@ public class CourseRepositoryApiController {
                 .path("/{id}")
                 .buildAndExpand(courseId)
                 .toUri();
-        return ResponseEntity.created(location).body(new CreateCourseResonse(courseId));
+        return ResponseEntity.created(location).body(new CreateCourseResponse(courseId));
     }
 
     @DeleteMapping("/{courseId}")
