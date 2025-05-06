@@ -40,9 +40,23 @@ jobs:
         
       - name: JAR 파일 복사 및 배포
         run: |
+          # JAR 파일 원격 서버로 복사
           gcloud compute scp build/libs/*.jar ${{ secrets.GCE_INSTANCE }}:~/app.jar --zone=${{ secrets.GCE_ZONE }}
+          
+          # 디렉토리 생성 및 JAR 파일 이동
           gcloud compute ssh ${{ secrets.GCE_INSTANCE }} --zone=${{ secrets.GCE_ZONE }} --command="
-            sudo systemctl stop spring-app || true
+            # 디렉토리 생성
+            sudo mkdir -p /opt/spring-app/
+            
+            # JAR 파일 이동
             sudo mv ~/app.jar /opt/spring-app/app.jar
-            sudo systemctl start spring-app
+            
+            # 권한 설정
+            sudo chmod 755 /opt/spring-app/app.jar
+            
+            # Java로 애플리케이션 실행 (백그라운드에서)
+            cd /opt/spring-app
+            sudo nohup java -jar app.jar > app.log 2>&1 &
+            
+            echo '애플리케이션이 백그라운드에서 시작되었습니다.'
           "
