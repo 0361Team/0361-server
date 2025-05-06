@@ -19,6 +19,14 @@ jobs:
         run: |
           chmod +x ./gradlew
           ./gradlew build -x test
+          
+      - name: JAR 파일 확인
+        run: |
+          # 빌드된 JAR 파일 확인
+          echo "빌드된 JAR 파일 목록:"
+          find build/libs -type f -name "*.jar" -exec ls -la {} \;
+          # JAR 파일 명확하게 지정
+          echo "JAR_FILE=$(find build/libs -type f -name "*.jar" | head -1)" >> $GITHUB_ENV
         
       - name: Google Cloud 인증
         uses: google-github-actions/auth@v1
@@ -30,11 +38,21 @@ jobs:
         
       - name: JAR 파일 복사 및 배포
         run: |
-          # JAR 파일 원격 서버로 복사
-          gcloud compute scp build/libs/*.jar ${{ secrets.GCE_INSTANCE }}:~/app.jar --zone=${{ secrets.GCE_ZONE }} --quiet
+          # JAR 파일 정확한 경로로 복사
+          echo "복사할 JAR 파일: ${{ env.JAR_FILE }}"
+          if [ ! -f "${{ env.JAR_FILE }}" ]; then
+            echo "오류: JAR 파일을 찾을 수 없습니다."
+            exit 1
+          fi
+          
+          # JAR 파일 원격 서버로 복사 (명확한 경로와 파일명 사용)
+          gcloud compute scp "${{ env.JAR_FILE }}" ${{ secrets.GCE_INSTANCE }}:~/app.jar --zone=${{ secrets.GCE_ZONE }} --quiet
           
           # 간단한 실행 명령
           gcloud compute ssh ${{ secrets.GCE_INSTANCE }} --zone=${{ secrets.GCE_ZONE }} --command="
+            echo '서버에 연결됨, JAR 파일 확인:'
+            ls -la ~/app.jar
+            
             sudo mkdir -p /opt/spring-app/
             sudo cp ~/app.jar /opt/spring-app/app.jar
             sudo chmod 755 /opt/spring-app/app.jar
@@ -47,4 +65,7 @@ jobs:
             sudo nohup java -jar app.jar > /dev/null 2>&1 &
             
             echo '애플리케이션이 백그라운드에서 시작되었습니다.'
+            
+            # 프로세스 확인
+            ps -ef | grep java
           "
