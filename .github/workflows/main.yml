@@ -36,39 +36,20 @@ jobs:
       - name: gcloud 설정
         uses: google-github-actions/setup-gcloud@v1
         
-      - name: JAR 파일 전송 및 배포
+      - name: Deploy JAR to VM
         run: |
-          # 전체 JAR 파일 경로 출력
-          echo "전송할 JAR 파일: ${{ env.JAR_FILE }}"
+          # 애플리케이션 JAR 파일을 VM에 복사
+          gcloud compute scp ${{ env.JAR_FILE }} your-instance-name:~/app/ --zone=your-zone
           
-          # JAR 파일 전송 (파일명 그대로 유지)
-          gcloud compute scp ${{ env.JAR_FILE }} ${{ secrets.GCE_INSTANCE }}:~/ --zone=${{ secrets.GCE_ZONE }}
+          # 애플리케이션 디렉토리 구성
+          gcloud compute ssh your-instance-name --zone=your-zone --command="mkdir -p ~/app/backup"
           
-          # 그 다음 전송된 파일 확인 및 배포
-          gcloud compute ssh ${{ secrets.GCE_INSTANCE }} --zone=${{ secrets.GCE_ZONE }} --command="
-            # 전송된 파일 확인
-            echo '전송된 JAR 파일 확인:'
-            ls -la ~/*.jar
-            
-            # 실제 JAR 파일 찾기 (plain이 아닌 파일)
-            ACTUAL_JAR=\$(find ~/ -name \"*.jar\" -not -name \"*-plain.jar\" | head -1)
-            echo \"찾은 JAR 파일: \$ACTUAL_JAR\"
-            
-            # 앱 디렉토리 생성
-            sudo mkdir -p /opt/spring-app/logs/
-            
-            # JAR 파일 직접 복사 (실제 찾은 파일 사용)
-            sudo cp \"\$ACTUAL_JAR\" /opt/spring-app/app.jar
-            sudo chmod 755 /opt/spring-app/app.jar
-            
-            # 기존 프로세스 종료 (있다면)
-            sudo pkill -f 'java -jar /opt/spring-app/app.jar' || true
-            
-            # 백그라운드 실행
-            cd /opt/spring-app
-            sudo nohup java -jar app.jar > /opt/spring-app/logs/application.log 2>&1 &
-            echo '애플리케이션이 백그라운드에서 시작되었습니다.'
-            
-            # 프로세스 확인
-            ps -ef | grep java
-          "
+          # 기존 JAR 파일 백업 및 새 JAR 파일 배치
+          gcloud compute ssh your-instance-name --zone=your-zone --command="if [ -f ~/app/application.jar ]; then mv ~/app/application.jar ~/app/backup/application-$(date +%Y%m%d%H%M%S).jar; fi"
+          gcloud compute ssh your-instance-name --zone=your-zone --command="mv ~/app/*.jar ~/app/application.jar"
+          
+          # 서비스 재시작
+          gcloud compute ssh your-instance-name --zone=your-zone --command="sudo systemctl restart spring-app"
+          
+          # 서비스 상태 확인
+          gcloud compute ssh your-instance-name --zone=your-zone --command="sudo systemctl status spring-app"
