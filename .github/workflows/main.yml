@@ -39,17 +39,17 @@ jobs:
       - name: Deploy JAR to VM
         run: |
           # 애플리케이션 JAR 파일을 VM에 복사
-          gcloud compute scp ${{ env.JAR_FILE }} your-instance-name:~/app/ --zone=your-zone
+          gcloud compute scp ${{ env.JAR_FILE }} spring-app-instance:~/app/ --zone=${{ secrets.GCE_ZONE }}
           
           # 애플리케이션 디렉토리 구성
-          gcloud compute ssh your-instance-name --zone=your-zone --command="mkdir -p ~/app/backup"
+          gcloud compute ssh spring-app-instance --zone=${{ secrets.GCE_ZONE }} --command="mkdir -p ~/app/backup"
           
           # 기존 JAR 파일 백업 및 새 JAR 파일 배치
-          gcloud compute ssh your-instance-name --zone=your-zone --command="if [ -f ~/app/application.jar ]; then mv ~/app/application.jar ~/app/backup/application-$(date +%Y%m%d%H%M%S).jar; fi"
-          gcloud compute ssh your-instance-name --zone=your-zone --command="mv ~/app/*.jar ~/app/application.jar"
+          gcloud compute ssh spring-app-instance --zone=${{ secrets.GCE_ZONE }} --command="if [ -f ~/app/application.jar ]; then mv ~/app/application.jar ~/app/backup/application-$(date +%Y%m%d%H%M%S).jar; fi"
+          gcloud compute ssh spring-app-instance --zone=${{ secrets.GCE_ZONE }} --command="mv ~/app/*.jar ~/app/application.jar"
           
           # 서비스 재시작
-          gcloud compute ssh your-instance-name --zone=your-zone --command="sudo systemctl restart spring-app"
+          gcloud compute ssh spring-app-instance --zone=${{ secrets.GCE_ZONE }} --command="sudo systemctl restart spring-app"
           
           # 서비스 상태 확인
-          gcloud compute ssh your-instance-name --zone=your-zone --command="sudo systemctl status spring-app"
+          gcloud compute ssh spring-app-instance --zone=${{ secrets.GCE_ZONE }} --command="sudo systemctl status spring-app"
