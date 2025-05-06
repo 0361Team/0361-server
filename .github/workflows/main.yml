@@ -39,10 +39,10 @@ jobs:
       - name: Set permissions and deploy JAR
         run: |
           # 권한 설정
-          gcloud compute ssh spring-app-instance --zone=${{ secrets.GCE_ZONE }} --command="mkdir -p /home/lecture2quiz/app && chmod 755 /home/lecture2quiz && chmod 755 /home/lecture2quiz/app"
+          gcloud compute ssh spring-app-instance --zone=${{ secrets.GCE_ZONE }} --command="mkdir -p /home/lecture2quiz/app"
           
           # 임시 디렉토리로 파일 복사
           gcloud compute scp ${{ env.JAR_FILE }} spring-app-instance:/tmp/ --zone=${{ secrets.GCE_ZONE }}
           
           # 파일 이동 및 권한 설정
-          gcloud compute ssh spring-app-instance --zone=${{ secrets.GCE_ZONE }} --command="cp /tmp/*.jar /home/lecture2quiz/app/application.jar && chmod 644 /home/lecture2quiz/app/application.jar"
+          gcloud compute ssh spring-app-instance --zone=${{ secrets.GCE_ZONE }} --command="cp /tmp/*.jar /home/lecture2quiz/app/application.jar"
