@@ -36,51 +36,20 @@ jobs:
       - name: gcloud 설정
         uses: google-github-actions/setup-gcloud@v1
         
-      - name: SSH로 배포
+      - name: Deploy JAR to VM
         run: |
-          # SSH 키를 설정
-          echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > private_key.pem
-          chmod 600 private_key.pem
+          # 애플리케이션 JAR 파일을 VM에 복사
+          gcloud compute scp ${{ env.JAR_FILE }} your-instance-name:~/app/ --zone=your-zone
           
-          # JAR 파일을 VM으로 복사 (SCP 대신 gcloud를 이용한 SSH 명령으로 수행)
-          echo "JAR 파일을 VM으로 전송 중..."
-          cat ${{ env.JAR_FILE }} | gcloud compute ssh lecture2quiz@spring-app-instance --zone=${{ secrets.GCE_ZONE }} --ssh-key-file=private_key.pem -- "cat > /tmp/application.jar"
+          # 애플리케이션 디렉토리 구성
+          gcloud compute ssh your-instance-name --zone=your-zone --command="mkdir -p ~/app/backup"
           
-          # 디렉토리 설정 및 파일 이동
-          echo "서비스 설정 중..."
-          gcloud compute ssh lecture2quiz@spring-app-instance --zone=${{ secrets.GCE_ZONE }} --ssh-key-file=private_key.pem -- "
-            sudo mkdir -p /opt/spring-app
-            sudo cp /tmp/application.jar /opt/spring-app/
-            sudo chown -R lecture2quiz:lecture2quiz /opt/spring-app
-            
-            # 서비스 파일이 없으면 생성
-            if [ ! -f /etc/systemd/system/spring-app.service ]; then
-              echo '[Unit]
-              Description=Spring Boot Application
-              After=network.target
-              
-              [Service]
-              User=lecture2quiz
-              Group=lecture2quiz
-              WorkingDirectory=/opt/spring-app
-              ExecStart=/usr/bin/java -jar /opt/spring-app/application.jar
-              SuccessExitStatus=143
-              Restart=always
-              RestartSec=5
-              
-              [Install]
-              WantedBy=multi-user.target' | sudo tee /etc/systemd/system/spring-app.service
-              
-              sudo systemctl daemon-reload
-              sudo systemctl enable spring-app
-            fi
-            
-            # 서비스 재시작
-            sudo systemctl restart spring-app
-            
-            # 상태 확인
-            sudo systemctl status spring-app
-          "
+          # 기존 JAR 파일 백업 및 새 JAR 파일 배치
+          gcloud compute ssh your-instance-name --zone=your-zone --command="if [ -f ~/app/application.jar ]; then mv ~/app/application.jar ~/app/backup/application-$(date +%Y%m%d%H%M%S).jar; fi"
+          gcloud compute ssh your-instance-name --zone=your-zone --command="mv ~/app/*.jar ~/app/application.jar"
           
-          # 임시 키 파일 삭제
-          rm private_key.pem
+          # 서비스 재시작
+          gcloud compute ssh your-instance-name --zone=your-zone --command="sudo systemctl restart spring-app"
+          
+          # 서비스 상태 확인
+          gcloud compute ssh your-instance-name --zone=your-zone --command="sudo systemctl status spring-app"
