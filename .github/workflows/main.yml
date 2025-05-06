@@ -38,18 +38,8 @@ jobs:
         
       - name: Deploy JAR to VM
         run: |
-          # 애플리케이션 JAR 파일을 VM에 복사
-          gcloud compute scp ${{ env.JAR_FILE }} spring-app-instance:~/app/ --zone=${{ secrets.GCE_ZONE }}
+          # 홈 디렉토리로 직접 복사
+          gcloud compute scp ${{ env.JAR_FILE }} spring-app-instance:/home/lecture2quiz/ --zone=${{ secrets.GCE_ZONE }}
           
-          # 애플리케이션 디렉토리 구성
-          gcloud compute ssh spring-app-instance --zone=${{ secrets.GCE_ZONE }} --command="mkdir -p ~/app/backup"
-          
-          # 기존 JAR 파일 백업 및 새 JAR 파일 배치
-          gcloud compute ssh spring-app-instance --zone=${{ secrets.GCE_ZONE }} --command="if [ -f ~/app/application.jar ]; then mv ~/app/application.jar ~/app/backup/application-$(date +%Y%m%d%H%M%S).jar; fi"
-          gcloud compute ssh spring-app-instance --zone=${{ secrets.GCE_ZONE }} --command="mv ~/app/*.jar ~/app/application.jar"
-          
-          # 서비스 재시작
-          gcloud compute ssh spring-app-instance --zone=${{ secrets.GCE_ZONE }} --command="sudo systemctl restart spring-app"
-          
-          # 서비스 상태 확인
-          gcloud compute ssh spring-app-instance --zone=${{ secrets.GCE_ZONE }} --command="sudo systemctl status spring-app"
+          # 파일 이동 및 서비스 구성
+          gcloud compute ssh spring-app-instance --zone=${{ secrets.GCE_ZONE }} --command="mkdir -p /home/lecture2quiz/app && mv /home/lecture2quiz/*.jar /home/lecture2quiz/app/application.jar"
