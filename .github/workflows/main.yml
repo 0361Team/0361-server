@@ -36,31 +36,7 @@ jobs:
       - name: gcloud 설정
         uses: google-github-actions/setup-gcloud@v1
         
-      - name: JAR 파일 복사 및 배포
+      - name: JAR 파일 전송
         run: |
-          gcloud compute ssh ${{ secrets.GCE_INSTANCE }} --zone=${{ secrets.GCE_ZONE }} --command="
-            echo '서버에 연결됨, JAR 파일 확인:'
-            JAR_FILE=\$(find ~/ -name \"*.jar\" -not -name \"*-plain.jar\" | head -1)
-            echo \"찾은 JAR 파일: \$JAR_FILE\"
-            
-            if [ -z \"\$JAR_FILE\" ]; then
-              echo \"오류: JAR 파일을 찾을 수 없습니다.\"
-              exit 1
-            fi
-            
-            sudo mkdir -p /opt/spring-app/
-            sudo cp \"\$JAR_FILE\" /opt/spring-app/app.jar
-            sudo chmod 755 /opt/spring-app/app.jar
-            
-            # 기존 프로세스 종료 (있다면)
-            sudo pkill -f 'java -jar /opt/spring-app/app.jar' || true
-            
-            # 백그라운드 실행 (로그 없이)
-            cd /opt/spring-app
-            sudo nohup java -jar app.jar > /dev/null 2>&1 &
-            
-            echo '애플리케이션이 백그라운드에서 시작되었습니다.'
-            
-            # 프로세스 확인
-            ps -ef | grep java
-          "
+          gcloud compute scp ${{ env.JAR_FILE }} ${{ secrets.GCE_INSTANCE }}:~/app.jar --zone=${{ secrets.GCE_ZONE }}
+
