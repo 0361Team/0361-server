@@ -41,7 +41,7 @@ jobs:
       - name: 배포 준비 및 애플리케이션 중지
         uses: appleboy/ssh-action@master
         with:
-          host: lecture2quiz@spring-app-instance
+          host: ${{ secrets.GCE_HOST }}
           username: lecture2quiz
           key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
           port: 22
@@ -59,7 +59,7 @@ jobs:
       - name: JAR 파일 전송
         uses: appleboy/scp-action@master
         with:
-          host: lecture2quiz@spring-app-instance
+          host: ${{ secrets.GCE_HOST }}
           username: lecture2quiz
           key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
           port: 22
