@@ -1,8 +1,10 @@
 name: 스프링 앱 배포
+
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -14,12 +16,12 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          
+      
       - name: Gradle 빌드
         run: |
           chmod +x ./gradlew
           ./gradlew build -x test
-          
+      
       - name: JAR 파일 확인
         run: |
           # 빌드된 JAR 파일 확인
@@ -27,29 +29,64 @@ jobs:
           find build/libs -type f -name "*.jar" -exec ls -la {} \;
           # JAR 파일 명확하게 지정
           echo "JAR_FILE=$(find build/libs -type f -name "*.jar" | head -1)" >> $GITHUB_ENV
-        
+      
       - name: Google Cloud 인증
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
-          
+      
       - name: gcloud 설정
         uses: google-github-actions/setup-gcloud@v1
-        
-      - name: Deploy JAR to VM
+      
+      - name: SSH로 배포
         run: |
-          # 애플리케이션 JAR 파일을 VM에 복사
-          gcloud compute scp ${{ env.JAR_FILE }} spring-app-instance:~/app/ --zone=${{ secrets.GCE_ZONE }}
+          # SSH 키를 설정
+          echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > private_key.pem
+          chmod 600 private_key.pem
           
-          # 애플리케이션 디렉토리 구성
-          gcloud compute ssh spring-app-instance --zone=${{ secrets.GCE_ZONE }} --command="mkdir -p ~/app/backup"
+          # 공개키 파일 생성 (이 부분이 추가됨)
+          ssh-keygen -y -f private_key.pem > private_key.pem.pub
+          chmod 644 private_key.pem.pub
           
-          # 기존 JAR 파일 백업 및 새 JAR 파일 배치
-          gcloud compute ssh spring-app-instance --zone=${{ secrets.GCE_ZONE }} --command="if [ -f ~/app/application.jar ]; then mv ~/app/application.jar ~/app/backup/application-$(date +%Y%m%d%H%M%S).jar; fi"
-          gcloud compute ssh spring-app-instance --zone=${{ secrets.GCE_ZONE }} --command="mv ~/app/*.jar ~/app/application.jar"
+          # JAR 파일을 VM으로 복사 (SCP 대신 gcloud를 이용한 SSH 명령으로 수행)
+          echo "JAR 파일을 VM으로 전송 중..."
+          cat ${{ env.JAR_FILE }} | gcloud compute ssh lecture2quiz@spring-app-instance --zone=${{ secrets.GCE_ZONE }} --ssh-key-file=private_key.pem -- "cat > /tmp/application.jar"
           
-          # 서비스 재시작
-          gcloud compute ssh spring-app-instance --zone=${{ secrets.GCE_ZONE }} --command="sudo systemctl restart spring-app"
+          # 디렉토리 설정 및 파일 이동
+          echo "서비스 설정 중..."
+          gcloud compute ssh lecture2quiz@spring-app-instance --zone=${{ secrets.GCE_ZONE }} --ssh-key-file=private_key.pem -- "
+            sudo mkdir -p /opt/spring-app
+            sudo cp /tmp/application.jar /opt/spring-app/
+            sudo chown -R lecture2quiz:lecture2quiz /opt/spring-app
+            
+            # 서비스 파일이 없으면 생성
+            if [ ! -f /etc/systemd/system/spring-app.service ]; then
+              echo '[Unit]
+            Description=Spring Boot Application
+            After=network.target
+
+            [Service]
+            User=lecture2quiz
+            Group=lecture2quiz
+            WorkingDirectory=/opt/spring-app
+            ExecStart=/usr/bin/java -jar /opt/spring-app/application.jar
+            SuccessExitStatus=143
+            Restart=always
+            RestartSec=5
+
+            [Install]
+            WantedBy=multi-user.target' | sudo tee /etc/systemd/system/spring-app.service
+              sudo systemctl daemon-reload
+              sudo systemctl enable spring-app
+            fi
+            
+            # 서비스 재시작
+            sudo systemctl restart spring-app
+            
+            # 상태 확인
+            sudo systemctl status spring-app
+          "
           
-          # 서비스 상태 확인
-          gcloud compute ssh spring-app-instance --zone=${{ secrets.GCE_ZONE }} --command="sudo systemctl status spring-app"
+          # 임시 키 파일 삭제
+          rm private_key.pem
+          rm private_key.pem.pub
