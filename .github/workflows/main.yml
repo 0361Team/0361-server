@@ -36,10 +36,13 @@ jobs:
       - name: gcloud 설정
         uses: google-github-actions/setup-gcloud@v1
         
-      - name: Deploy JAR to VM
+      - name: Set permissions and deploy JAR
         run: |
-          # 홈 디렉토리로 직접 복사
-          gcloud compute scp ${{ env.JAR_FILE }} spring-app-instance:/home/lecture2quiz/ --zone=${{ secrets.GCE_ZONE }}
+          # 권한 설정
+          gcloud compute ssh spring-app-instance --zone=${{ secrets.GCE_ZONE }} --command="mkdir -p /home/lecture2quiz/app && chmod 755 /home/lecture2quiz && chmod 755 /home/lecture2quiz/app"
           
-          # 파일 이동 및 서비스 구성
-          gcloud compute ssh spring-app-instance --zone=${{ secrets.GCE_ZONE }} --command="mkdir -p /home/lecture2quiz/app && mv /home/lecture2quiz/*.jar /home/lecture2quiz/app/application.jar"
+          # 임시 디렉토리로 파일 복사
+          gcloud compute scp ${{ env.JAR_FILE }} spring-app-instance:/tmp/ --zone=${{ secrets.GCE_ZONE }}
+          
+          # 파일 이동 및 권한 설정
+          gcloud compute ssh spring-app-instance --zone=${{ secrets.GCE_ZONE }} --command="cp /tmp/*.jar /home/lecture2quiz/app/application.jar && chmod 644 /home/lecture2quiz/app/application.jar"
