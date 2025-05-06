@@ -36,28 +36,32 @@ jobs:
       - name: gcloud 설정
         uses: google-github-actions/setup-gcloud@v1
         
-      - name: JAR 파일 복사 및 실행
+      - name: JAR 파일 전송 및 배포
         run: |
+          # 먼저 JAR 파일 전송
+          gcloud compute scp ${{ env.JAR_FILE }} ${{ secrets.GCE_INSTANCE }}:~/app.jar --zone=${{ secrets.GCE_ZONE }}
+          
+          # 그 다음 전송된 파일 확인 및 배포
           gcloud compute ssh ${{ secrets.GCE_INSTANCE }} --zone=${{ secrets.GCE_ZONE }} --command="
-            # 애플리케이션 디렉토리 생성 및 권한 설정
+            # 전송된 파일 확인
+            echo '전송된 JAR 파일 확인:'
+            ls -la ~/app.jar
+            
+            # 앱 디렉토리 생성
             sudo mkdir -p /opt/spring-app/logs/
             
-            # JAR 파일 복사 및 권한 설정
-            sudo cp ~/app.jar /opt/spring-app/app.jar
+            # JAR 파일 직접 복사 (절대 경로 사용)
+            sudo cp \$HOME/app.jar /opt/spring-app/app.jar
             sudo chmod 755 /opt/spring-app/app.jar
-            
-            # 로그 디렉토리 권한 설정
-            sudo chmod -R 755 /opt/spring-app/logs/
             
             # 기존 프로세스 종료 (있다면)
             sudo pkill -f 'java -jar /opt/spring-app/app.jar' || true
             
-            # 백그라운드 실행 (로그 파일에 저장)
+            # 백그라운드 실행
             cd /opt/spring-app
             sudo nohup java -jar app.jar > /opt/spring-app/logs/application.log 2>&1 &
-            echo '애플리케이션이 백그라운드에서 시작되었습니다. 로그는 /opt/spring-app/logs/application.log에 저장됩니다.'
+            echo '애플리케이션이 백그라운드에서 시작되었습니다.'
             
             # 프로세스 확인
             ps -ef | grep java
           "
-
