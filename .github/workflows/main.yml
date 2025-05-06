@@ -15,16 +15,6 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           
-      - name: Gradle 캐시 설정
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-          
       - name: Gradle 빌드
         run: |
           chmod +x ./gradlew
@@ -41,22 +31,20 @@ jobs:
       - name: JAR 파일 복사 및 배포
         run: |
           # JAR 파일 원격 서버로 복사
-          gcloud compute scp build/libs/*.jar ${{ secrets.GCE_INSTANCE }}:~/app.jar --zone=${{ secrets.GCE_ZONE }}
+          gcloud compute scp build/libs/*.jar ${{ secrets.GCE_INSTANCE }}:~/app.jar --zone=${{ secrets.GCE_ZONE }} --quiet
           
-          # 디렉토리 생성 및 JAR 파일 이동
+          # 간단한 실행 명령
           gcloud compute ssh ${{ secrets.GCE_INSTANCE }} --zone=${{ secrets.GCE_ZONE }} --command="
-            # 디렉토리 생성
             sudo mkdir -p /opt/spring-app/
-            
-            # JAR 파일 이동
-            sudo mv ~/app.jar /opt/spring-app/app.jar
-            
-            # 권한 설정
+            sudo cp ~/app.jar /opt/spring-app/app.jar
             sudo chmod 755 /opt/spring-app/app.jar
             
-            # Java로 애플리케이션 실행 (백그라운드에서)
+            # 기존 프로세스 종료 (있다면)
+            sudo pkill -f 'java -jar /opt/spring-app/app.jar' || true
+            
+            # 백그라운드 실행 (로그 없이)
             cd /opt/spring-app
-            sudo nohup java -jar app.jar > app.log 2>&1 &
+            sudo nohup java -jar app.jar > /dev/null 2>&1 &
             
             echo '애플리케이션이 백그라운드에서 시작되었습니다.'
           "
