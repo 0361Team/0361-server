@@ -2,9 +2,7 @@ package com._1.spring_rest_api.entity;
 
 import com._1.spring_rest_api.entity.base.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +10,8 @@ import java.util.List;
 @Entity
 @Table(name = "UserTB")
 @Getter
-@Setter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 public class User extends BaseTimeEntity {
 
@@ -43,5 +42,21 @@ public class User extends BaseTimeEntity {
 
     public User(Long id) {
         this.id = id;
+    }
+
+    public void linkWithKakao(UserKakao userKakao) {
+        this.userKakao = userKakao;
+    }
+
+    public static User createKakaoUser(String email, String name) {
+        if (email == null || email.isEmpty()) {
+            throw new IllegalArgumentException("이메일은 필수 값입니다.");
+        }
+
+        return User.builder()
+                .email(email)
+                .name(name)
+                .isActive(true)
+                .build();
     }
 }

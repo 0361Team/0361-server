@@ -4,6 +4,7 @@ import com._1.spring_rest_api.api.dto.WeekResponse;
 import com._1.spring_rest_api.entity.base.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -13,6 +14,7 @@ import java.util.List;
 @Entity
 @Table(name = "WEEK")
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Week extends BaseTimeEntity {

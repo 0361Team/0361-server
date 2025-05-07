@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 @Entity
 @Table(name = "COURSE")
 @Getter
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Course extends BaseTimeEntity {
