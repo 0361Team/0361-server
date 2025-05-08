@@ -92,9 +92,10 @@ class OAuth2SuccessHandlerTest {
 
         when(userService.findByKakaoId(KAKAO_ID)).thenReturn(null);
 
-        User newUser = new User();
-        newUser.setId(1L);
-        newUser.setEmail(EMAIL);
+        User newUser = User.builder()
+                .id(1L)
+                .email(EMAIL)
+                .build();
         when(userService.createKakaoUser(eq(EMAIL), eq(NAME), eq(KAKAO_ID))).thenReturn(newUser);
 
         UserDetails userDetails = mock(UserDetails.class);
@@ -119,7 +120,10 @@ class OAuth2SuccessHandlerTest {
     void onAuthenticationSuccess_shouldIgnore_whenNotKakaoProvider() throws IOException, ServletException {
         // Given
         OAuth2AuthenticationToken mockToken = mock(OAuth2AuthenticationToken.class);
+        OAuth2User mockOAuth2User = mock(OAuth2User.class);  // OAuth2User 모의 객체 생성
+
         when(mockToken.getAuthorizedClientRegistrationId()).thenReturn("google");
+        when(mockToken.getPrincipal()).thenReturn(mockOAuth2User);  // getPrincipal()이 모의 OAuth2User 반환하도록 설정
 
         // When
         oAuth2SuccessHandler.onAuthenticationSuccess(request, response, mockToken);
@@ -132,12 +136,12 @@ class OAuth2SuccessHandlerTest {
 
     // 헬퍼 메서드
     private User mockExistingUser() {
-        User user = new User();
-        user.setId(1L);
-        user.setEmail(EMAIL);
-        user.setName(NAME);
-        user.setIsActive(true);
-        return user;
+        return User.builder()
+                .id(1L)
+                .email(EMAIL)
+                .name(NAME)
+                .isActive(true)
+                .build();
     }
 
     private void mockKakaoAuthentication() {

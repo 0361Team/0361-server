@@ -29,11 +29,12 @@ class CustomUserDetailsServiceTest {
     void loadUserByUsername_shouldReturnUserDetails_whenUserExists() {
         // Given
         String email = "test@example.com";
-        User user = new User();
-        user.setId(1L);
-        user.setEmail(email);
-        user.setName("Test User");
-        user.setIsActive(true);
+        User user = User.builder()
+                .id(1L)
+                .email(email)
+                .name("Test User")
+                .isActive(true)
+                .build();
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
 
@@ -75,11 +76,12 @@ class CustomUserDetailsServiceTest {
     void loadUserByUsername_shouldReturnDisabledUser_whenUserIsInactive() {
         // Given
         String email = "inactive@example.com";
-        User user = new User();
-        user.setId(1L);
-        user.setEmail(email);
-        user.setName("Inactive User");
-        user.setIsActive(false); // User is inactive
+        User user = User.builder()
+                .id(1L)
+                .email(email)
+                .name("Inactive User")
+                .isActive(false) // User is inactive
+                .build();
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
 

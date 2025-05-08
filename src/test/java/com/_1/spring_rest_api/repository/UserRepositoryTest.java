@@ -34,10 +34,11 @@ class UserRepositoryTest {
         // Given
         String email = "test@example.com";
 
-        User user = new User();
-        user.setEmail(email);
-        user.setName("Test User");
-        user.setIsActive(true);
+        User user = User.builder()
+                .email(email)
+                .name("Test User")
+                .isActive(true)
+                .build();
 
         entityManager.persist(user);
         entityManager.flush();
@@ -66,10 +67,11 @@ class UserRepositoryTest {
     @Test
     void save_shouldPersistUser() {
         // Given
-        User user = new User();
-        user.setEmail("save@example.com");
-        user.setName("Save Test User");
-        user.setIsActive(true);
+        User user = User.builder()
+                .email("save@example.com")
+                .name("Save Test User")
+                .isActive(true)
+                .build();
 
         // When
         User saved = userRepository.save(user);
@@ -86,16 +88,18 @@ class UserRepositoryTest {
     @Test
     void findAll_shouldReturnAllUsers() {
         // Given
-        User user1 = new User();
-        user1.setEmail("user1@example.com");
-        user1.setName("User One");
-        user1.setIsActive(true);
+        User user1 = User.builder()
+                .email("user1@example.com")
+                .name("User One")
+                .isActive(true)
+                .build();
         entityManager.persist(user1);
 
-        User user2 = new User();
-        user2.setEmail("user2@example.com");
-        user2.setName("User Two");
-        user2.setIsActive(true);
+        User user2 = User.builder()
+                .email("user2@example.com")
+                .name("User Two")
+                .isActive(true)
+                .build();
         entityManager.persist(user2);
 
         entityManager.flush();
@@ -113,17 +117,19 @@ class UserRepositoryTest {
     @Test
     void update_shouldModifyUser() {
         // Given
-        User user = new User();
-        user.setEmail("update@example.com");
-        user.setName("Original Name");
-        user.setIsActive(true);
+        User user = User.builder()
+                .email("update@example.com")
+                .name("Original Name")
+                .isActive(true)
+                .build();
 
         entityManager.persist(user);
         entityManager.flush();
 
         // When - update name
         User savedUser = entityManager.find(User.class, user.getId());
-        savedUser.setName("Updated Name");
+        // 도메인 로직을 사용한 방식으로 변경
+        savedUser.updateName("Updated Name");
         userRepository.save(savedUser);
 
         // Then
@@ -135,10 +141,11 @@ class UserRepositoryTest {
     @Test
     void delete_shouldRemoveUser() {
         // Given
-        User user = new User();
-        user.setEmail("delete@example.com");
-        user.setName("Delete Test User");
-        user.setIsActive(true);
+        User user = User.builder()
+                .email("delete@example.com")
+                .name("Delete Test User")
+                .isActive(true)
+                .build();
 
         entityManager.persist(user);
         entityManager.flush();
@@ -154,10 +161,11 @@ class UserRepositoryTest {
     @Test
     void findById_shouldReturnUser_whenExists() {
         // Given
-        User user = new User();
-        user.setEmail("findbyid@example.com");
-        user.setName("Find By ID User");
-        user.setIsActive(true);
+        User user = User.builder()
+                .email("findbyid@example.com")
+                .name("Find By ID User")
+                .isActive(true)
+                .build();
 
         entityManager.persist(user);
         entityManager.flush();

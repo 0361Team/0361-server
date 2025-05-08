@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
 @Entity
 @Table(name = "QUESTION")
 @Getter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Question extends BaseTimeEntity {
@@ -35,9 +36,11 @@ public class Question extends BaseTimeEntity {
     private String back;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<QuizQuestionMapping> quizQuestionMappings = new ArrayList<>();
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<UserAnswer> userAnswers = new ArrayList<>();
 
     // DTO로 변환하는 메서드

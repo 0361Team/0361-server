@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.List;
 @Entity
 @Table(name = "CUSTOM_QUIZ")
 @Getter
-@Builder
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 public class CustomQuiz extends BaseTimeEntity {
@@ -40,11 +41,14 @@ public class CustomQuiz extends BaseTimeEntity {
     private String quizType;
 
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<QuizQuestionMapping> quizQuestionMappings = new ArrayList<>();
 
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<QuizSession> quizSessions = new ArrayList<>();
 
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<QuizWeekMapping> quizWeekMappings = new ArrayList<>();
 }

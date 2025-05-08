@@ -29,22 +29,40 @@ public class User extends BaseTimeEntity {
     private UserKakao userKakao;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<UserAgree> userAgrees = new ArrayList<>();
 
     @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<Course> courses = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<QuizSession> quizSessions = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<UserAnswer> userAnswers = new ArrayList<>();
+
+    // 양방향 연관관계 설정 메서드
+    public void linkWithKakao(UserKakao userKakao) {
+        this.userKakao = userKakao;
+        // userKakao의 user 필드가 this가 아닌 경우에만 설정
+        if (userKakao.getUser() != this) {
+            userKakao.linkWithUser(this);
+        }
+    }
+
 
     public User(Long id) {
         this.id = id;
     }
 
-    public void linkWithKakao(UserKakao userKakao) {
+    public void updateName(String name) {
+        this.name = name;
+    }
+
+    public void updateUserKakao(UserKakao userKakao) {
         this.userKakao = userKakao;
     }
 

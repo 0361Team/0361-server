@@ -3,14 +3,17 @@ package com._1.spring_rest_api.entity;
 
 import com._1.spring_rest_api.entity.base.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "USER_KAKAO")
 @Getter
-@Builder
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserKakao extends BaseTimeEntity {
@@ -35,7 +38,15 @@ public class UserKakao extends BaseTimeEntity {
     @Column(name = "token_expires_at")
     private LocalDateTime tokenExpiresAt;
 
-    // 필요에 따라 추가 정보 (프로필 이미지 URL, 닉네임 등)
+    // 양방향 연관관계 설정 메서드
+    public void linkWithUser(User user) {
+        this.user = user;
+        // user의 userKakao 필드가 this가 아닌 경우에만 설정
+        if (user.getUserKakao() != this) {
+            user.linkWithKakao(this);
+        }
+    }
+
     /**
      * 카카오 토큰 정보를 업데이트한다.
      **/
@@ -59,7 +70,7 @@ public class UserKakao extends BaseTimeEntity {
                 .build();
 
         // 양방향 연관관계 설정
-        user.linkWithKakao(userKakao);
+        user.updateUserKakao(userKakao);
 
         return userKakao;
     }
