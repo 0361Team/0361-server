@@ -29,4 +29,12 @@ public class Text extends BaseTimeEntity {
 
     @Column(name = "type")
     private String type;
+
+    // Week와 Text 간의 양방향 연관관계 메서드
+    public void changeWeek(Week week) {
+        this.week = week;
+        if (week != null && !week.getTexts().contains(this)) {
+            week.getTexts().add(this);
+        }
+    }
 }

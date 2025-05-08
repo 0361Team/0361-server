@@ -30,4 +30,20 @@ public class UserAgree extends BaseTimeEntity {
 
     @Column(name = "is_agreed")
     private Boolean isAgreed;
+
+    // Term과 UserAgree 간의 양방향 연관관계 메서드
+    public void changeTerm(Term term) {
+        this.term = term;
+        if (term != null && !term.getUserAgrees().contains(this)) {
+            term.getUserAgrees().add(this);
+        }
+    }
+
+    // User와 UserAgree 간의 양방향 연관관계 메서드
+    public void changeUser(User user) {
+        this.user = user;
+        if (user != null && !user.getUserAgrees().contains(this)) {
+            user.getUserAgrees().add(this);
+        }
+    }
 }

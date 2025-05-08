@@ -43,6 +43,44 @@ public class Question extends BaseTimeEntity {
     @Builder.Default
     private List<UserAnswer> userAnswers = new ArrayList<>();
 
+    // Week와 Question 간의 양방향 연관관계 메서드
+    public void changeWeek(Week week) {
+        this.week = week;
+        if (week != null && !week.getQuestions().contains(this)) {
+            week.getQuestions().add(this);
+        }
+    }
+
+    // Question과 QuizQuestionMapping 간의 양방향 연관관계 메서드
+    public void addQuizQuestionMapping(QuizQuestionMapping mapping) {
+        this.quizQuestionMappings.add(mapping);
+        if (mapping.getQuestion() != this) {
+            mapping.changeQuestion(this);
+        }
+    }
+
+    public void removeQuizQuestionMapping(QuizQuestionMapping mapping) {
+        this.quizQuestionMappings.remove(mapping);
+        if (mapping.getQuestion() == this) {
+            mapping.changeQuestion(null);
+        }
+    }
+
+    // Question과 UserAnswer 간의 양방향 연관관계 메서드
+    public void addUserAnswer(UserAnswer userAnswer) {
+        this.userAnswers.add(userAnswer);
+        if (userAnswer.getQuestion() != this) {
+            userAnswer.changeQuestion(this);
+        }
+    }
+
+    public void removeUserAnswer(UserAnswer userAnswer) {
+        this.userAnswers.remove(userAnswer);
+        if (userAnswer.getQuestion() == this) {
+            userAnswer.changeQuestion(null);
+        }
+    }
+
     // DTO로 변환하는 메서드
     public QuestionResponse toQuestionResponse() {
         return QuestionResponse.builder()

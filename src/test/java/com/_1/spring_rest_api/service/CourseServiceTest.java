@@ -48,10 +48,11 @@ class CourseServiceTest {
         Week week1 = new Week(1L, "Week 1", testCourse);
         Week week2 = new Week(2L, "Week 2", testCourse);
 
+        testCourse.addWeek(week1);
+        testCourse.addWeek(week2);
+
         testWeeks.add(week1);
         testWeeks.add(week2);
-
-        testCourse.setWeeks(testWeeks);
     }
 
     @Test

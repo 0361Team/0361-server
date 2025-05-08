@@ -31,4 +31,20 @@ public class QuizSession extends BaseTimeEntity {
 
     @Column(name = "current_question_index")
     private Integer currentQuestionIndex;
+
+    // User와 QuizSession 간의 양방향 연관관계 메서드
+    public void changeUser(User user) {
+        this.user = user;
+        if (user != null && !user.getQuizSessions().contains(this)) {
+            user.getQuizSessions().add(this);
+        }
+    }
+
+    // CustomQuiz와 QuizSession 간의 양방향 연관관계 메서드
+    public void changeQuiz(CustomQuiz quiz) {
+        this.quiz = quiz;
+        if (quiz != null && !quiz.getQuizSessions().contains(this)) {
+            quiz.getQuizSessions().add(this);
+        }
+    }
 }

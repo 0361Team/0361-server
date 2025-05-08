@@ -36,4 +36,19 @@ public class Term extends BaseTimeEntity {
     @OneToMany(mappedBy = "term", cascade = CascadeType.ALL)
     @Builder.Default
     private List<UserAgree> userAgrees = new ArrayList<>();
+
+    // Term과 UserAgree 간의 양방향 연관관계 메서드
+    public void addUserAgree(UserAgree userAgree) {
+        this.userAgrees.add(userAgree);
+        if (userAgree.getTerm() != this) {
+            userAgree.changeTerm(this);
+        }
+    }
+
+    public void removeUserAgree(UserAgree userAgree) {
+        this.userAgrees.remove(userAgree);
+        if (userAgree.getTerm() == this) {
+            userAgree.changeTerm(null);
+        }
+    }
 }

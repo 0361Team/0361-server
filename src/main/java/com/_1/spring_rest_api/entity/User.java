@@ -44,7 +44,7 @@ public class User extends BaseTimeEntity {
     @Builder.Default
     private List<UserAnswer> userAnswers = new ArrayList<>();
 
-    // 양방향 연관관계 설정 메서드
+    // User와 UserKakao 간의 양방향 연관관계 메서드
     public void linkWithKakao(UserKakao userKakao) {
         this.userKakao = userKakao;
         // userKakao의 user 필드가 this가 아닌 경우에만 설정
@@ -53,6 +53,65 @@ public class User extends BaseTimeEntity {
         }
     }
 
+    // User와 UserAgree 간의 양방향 연관관계 메서드
+    public void addUserAgree(UserAgree userAgree) {
+        this.userAgrees.add(userAgree);
+        if (userAgree.getUser() != this) {
+            userAgree.changeUser(this);
+        }
+    }
+
+    public void removeUserAgree(UserAgree userAgree) {
+        this.userAgrees.remove(userAgree);
+        if (userAgree.getUser() == this) {
+            userAgree.changeUser(null);
+        }
+    }
+
+    // User와 Course 간의 양방향 연관관계 메서드
+    public void addCourse(Course course) {
+        this.courses.add(course);
+        if (course.getCreator() != this) {
+            course.changeCreator(this);
+        }
+    }
+
+    public void removeCourse(Course course) {
+        this.courses.remove(course);
+        if (course.getCreator() == this) {
+            course.changeCreator(null);
+        }
+    }
+
+    // 7. User와 QuizSession 간의 양방향 연관관계 메서드
+    public void addQuizSession(QuizSession session) {
+        this.quizSessions.add(session);
+        if (session.getUser() != this) {
+            session.changeUser(this);
+        }
+    }
+
+    public void removeQuizSession(QuizSession session) {
+        this.quizSessions.remove(session);
+        if (session.getUser() == this) {
+            session.changeUser(null);
+        }
+    }
+
+    // User와 UserAnswer 간의 양방향 연관관계 메서드
+    public void addUserAnswer(UserAnswer userAnswer) {
+        this.userAnswers.add(userAnswer);
+        if (userAnswer.getUser() != this) {
+            userAnswer.changeUser(this);
+        }
+    }
+
+    public void removeUserAnswer(UserAnswer userAnswer) {
+        this.userAnswers.remove(userAnswer);
+        if (userAnswer.getUser() == this) {
+            userAnswer.changeUser(null);
+        }
+    }
 
     public User(Long id) {
         this.id = id;
