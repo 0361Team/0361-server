@@ -7,6 +7,7 @@ import com._1.spring_rest_api.api.dto.WeekResponse;
 import com._1.spring_rest_api.entity.Course;
 import com._1.spring_rest_api.entity.Week;
 import com._1.spring_rest_api.service.CourseService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,11 +19,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/course")
 @RequiredArgsConstructor
-public class CourseRepositoryApiController {
+public class CourseApiController {
 
     private final CourseService courseService;
 
     @PostMapping
+    @Operation(method = "POST", description = "수업 생성")
     public ResponseEntity<CreateCourseResponse> createCourse(
             @RequestBody CreateCourseRequest request) {
         Long courseId = courseService.createCourse(request.getUserId(), request.getTitle(), request.getDescription());
@@ -35,6 +37,7 @@ public class CourseRepositoryApiController {
     }
 
     @DeleteMapping("/{courseId}")
+    @Operation(method = "DELETE", description = "수업 삭제")
     public ResponseEntity<Void> deleteCourse(
             @PathVariable Long courseId) {
         try {
@@ -46,6 +49,7 @@ public class CourseRepositoryApiController {
     }
 
     @GetMapping("/{courseId}")
+    @Operation(method = "GET", description = "수업 ID로 조회")
     public ResponseEntity<CourseResponse> getCourseById(
             @PathVariable Long courseId) {
         try {
@@ -56,6 +60,7 @@ public class CourseRepositoryApiController {
     }
 
     @GetMapping("/user/{userId}/courses")
+    @Operation(method = "GET", description = "사용자 ID로 사용자가 가진 수업 리스트 조회")
     public ResponseEntity<List<CourseResponse>> getUserCourseList(
             @PathVariable Long userId) {
         List<Course> courseList = courseService.getCoursesByUserId(userId);
@@ -66,6 +71,7 @@ public class CourseRepositoryApiController {
     }
 
     @GetMapping("/{courseId}/weeks")
+    @Operation(method = "GET", description = "수업 ID로 해당 수업에 속한 주차 리스트 조회")
     public ResponseEntity<List<WeekResponse>> getCourseWeekList(
             @PathVariable Long courseId
     ) {
