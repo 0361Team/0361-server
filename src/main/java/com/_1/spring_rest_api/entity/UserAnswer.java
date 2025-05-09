@@ -42,4 +42,20 @@ public class UserAnswer extends BaseTimeEntity {
 
     @Column(name = "answered_at")
     private LocalDateTime answeredAt;
+
+    // User와 UserAnswer 간의 양방향 연관관계 메서드
+    public void changeUser(User user) {
+        this.user = user;
+        if (user != null && !user.getUserAnswers().contains(this)) {
+            user.getUserAnswers().add(this);
+        }
+    }
+
+    // Question과 UserAnswer 간의 양방향 연관관계 메서드
+    public void changeQuestion(Question question) {
+        this.question = question;
+        if (question != null && !question.getUserAnswers().contains(this)) {
+            question.getUserAnswers().add(this);
+        }
+    }
 }

@@ -51,4 +51,50 @@ public class CustomQuiz extends BaseTimeEntity {
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)
     @Builder.Default
     private List<QuizWeekMapping> quizWeekMappings = new ArrayList<>();
+
+    // CustomQuiz와 QuizSession 간의 양방향 연관관계 메서드
+    public void addQuizSession(QuizSession session) {
+        this.quizSessions.add(session);
+        if (session.getQuiz() != this) {
+            session.changeQuiz(this);
+        }
+    }
+
+    public void removeQuizSession(QuizSession session) {
+        this.quizSessions.remove(session);
+        if (session.getQuiz() == this) {
+            session.changeQuiz(null);
+        }
+    }
+
+    // CustomQuiz와 QuizQuestionMapping 간의 양방향 연관관계 메서드
+    public void addQuizQuestionMapping(QuizQuestionMapping mapping) {
+        this.quizQuestionMappings.add(mapping);
+        if (mapping.getQuiz() != this) {
+            mapping.changeQuiz(this);
+        }
+    }
+
+    public void removeQuizQuestionMapping(QuizQuestionMapping mapping) {
+        this.quizQuestionMappings.remove(mapping);
+        if (mapping.getQuiz() == this) {
+            mapping.changeQuiz(null);
+        }
+    }
+
+    // CustomQuiz와 QuizWeekMapping 간의 양방향 연관관계 메서드
+    public void addQuizWeekMapping(QuizWeekMapping mapping) {
+        this.quizWeekMappings.add(mapping);
+        if (mapping.getQuiz() != this) {
+            mapping.changeQuiz(this);
+        }
+    }
+
+    public void removeQuizWeekMapping(QuizWeekMapping mapping) {
+        this.quizWeekMappings.remove(mapping);
+        if (mapping.getQuiz() == this) {
+            mapping.changeQuiz(null);
+        }
+    }
+
 }

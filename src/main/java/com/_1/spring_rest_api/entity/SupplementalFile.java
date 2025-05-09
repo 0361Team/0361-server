@@ -32,4 +32,12 @@ public class SupplementalFile extends BaseTimeEntity {
 
     @Column(name = "file_type")
     private String fileType;
+
+    // SupplementalFile.java에 추가
+    public void changeWeek(Week week) {
+        this.week = week;
+        if (week != null && !week.getSupplementalFiles().contains(this)) {
+            week.getSupplementalFiles().add(this);
+        }
+    }
 }

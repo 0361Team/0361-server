@@ -27,4 +27,20 @@ public class QuizWeekMapping extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "week_id")
     private Week week;
+
+    // CustomQuiz와 QuizWeekMapping 간의 양방향 연관관계 메서드
+    public void changeQuiz(CustomQuiz quiz) {
+        this.quiz = quiz;
+        if (quiz != null && !quiz.getQuizWeekMappings().contains(this)) {
+            quiz.getQuizWeekMappings().add(this);
+        }
+    }
+
+    // Week와 QuizWeekMapping 간의 양방향 연관관계 메서드
+    public void changeWeek(Week week) {
+        this.week = week;
+        if (week != null && !week.getQuizWeekMappings().contains(this)) {
+            week.getQuizWeekMappings().add(this);
+        }
+    }
 }
