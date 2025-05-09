@@ -6,6 +6,7 @@ import com._1.spring_rest_api.api.dto.WeekResponse;
 import com._1.spring_rest_api.entity.base.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 @Entity
 @Table(name = "COURSE")
 @Getter
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Course extends BaseTimeEntity {
@@ -35,6 +37,7 @@ public class Course extends BaseTimeEntity {
 
     @Setter
     @OneToMany(mappedBy = "course")
+    @Builder.Default
     private List<Week> weeks = new ArrayList<>();
 
     public Course(User creator, String title, String description) {

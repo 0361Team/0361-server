@@ -3,12 +3,16 @@ package com._1.spring_rest_api.entity;
 
 import com._1.spring_rest_api.entity.base.BaseTimeEntity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "QUIZ_SESSION")
 @Getter
+@SuperBuilder
+@AllArgsConstructor
 @NoArgsConstructor
 public class QuizSession extends BaseTimeEntity {
 

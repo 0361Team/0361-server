@@ -4,8 +4,10 @@ import com._1.spring_rest_api.api.dto.WeekResponse;
 import com._1.spring_rest_api.entity.base.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +15,7 @@ import java.util.List;
 @Entity
 @Table(name = "WEEK")
 @Getter
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Week extends BaseTimeEntity {
@@ -33,15 +36,19 @@ public class Week extends BaseTimeEntity {
     private Integer weekNumber;
 
     @OneToMany(mappedBy = "week", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<Text> texts = new ArrayList<>();
 
     @OneToMany(mappedBy = "week", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<Question> questions = new ArrayList<>();
 
     @OneToMany(mappedBy = "week", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<SupplementalFile> supplementalFiles = new ArrayList<>();
 
     @OneToMany(mappedBy = "week", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<QuizWeekMapping> quizWeekMappings = new ArrayList<>();
 
     public Week(Long id, String title, Course course) {
