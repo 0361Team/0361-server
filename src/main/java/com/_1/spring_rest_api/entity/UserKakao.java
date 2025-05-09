@@ -37,7 +37,7 @@ public class UserKakao extends BaseTimeEntity {
 
     @Column(name = "token_expires_at")
     private LocalDateTime tokenExpiresAt;
-
+  
     // User와 UserKakao 간의 양방향 연관관계 메서드
     public void linkWithUser(User user) {
         this.user = user;
