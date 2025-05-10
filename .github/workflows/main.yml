@@ -1,62 +1,128 @@
 name: 스프링 앱 배포
+
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: 코드 체크아웃
+        uses: actions/checkout@v3
       
       - name: JDK 설정
         uses: actions/setup-java@v3
         with:
           java-version: '21'
           distribution: 'temurin'
-          
-      - name: Gradle 캐시 설정
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-          
+          cache: gradle
+      
       - name: Gradle 빌드
         run: |
           chmod +x ./gradlew
           ./gradlew build -x test
-        
+      
+      - name: JAR 파일 확인
+        run: |
+          # 빌드된 JAR 파일 확인
+          echo "빌드된 JAR 파일 목록:"
+          find build/libs -type f -name "*.jar" -exec ls -la {} \;
+      
       - name: Google Cloud 인증
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
-          
+      
       - name: gcloud 설정
         uses: google-github-actions/setup-gcloud@v1
-        
-      - name: JAR 파일 복사 및 배포
-        run: |
-          # JAR 파일 원격 서버로 복사
-          gcloud compute scp build/libs/*.jar ${{ secrets.GCE_INSTANCE }}:~/app.jar --zone=${{ secrets.GCE_ZONE }}
-          
-          # 디렉토리 생성 및 JAR 파일 이동
-          gcloud compute ssh ${{ secrets.GCE_INSTANCE }} --zone=${{ secrets.GCE_ZONE }} --command="
-            # 디렉토리 생성
-            sudo mkdir -p /opt/spring-app/
+      
+      - name: 배포 준비 및 애플리케이션 중지
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.GCE_HOST }}
+          username: lecture2quiz
+          key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            # 애플리케이션 디렉토리 생성
+            mkdir -p /opt/spring-app
             
-            # JAR 파일 이동
-            sudo mv ~/app.jar /opt/spring-app/app.jar
+            # 현재 실행 중인 애플리케이션 중지
+            if pgrep -f "java -jar /opt/spring-app/application.jar"; then
+              echo "기존 애플리케이션 중지 중..."
+              pkill -f "java -jar /opt/spring-app/application.jar"
+              sleep 5
+            fi
+      
+      - name: JAR 파일 전송
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.GCE_HOST }}
+          username: lecture2quiz
+          key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+          port: 22
+          source: "build/libs/*.jar"
+          target: "/tmp"
+          strip_components: 2
+      
+      - name: 애플리케이션 배포 및 시작
+        uses: appleboy/ssh-action@master
+        with:
+          host: lecture2quiz@spring-app-instance
+          username: lecture2quiz
+          key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            # JAR 파일 찾기
+            JAR_FILE=$(find /tmp -name "*.jar" -not -name "*-plain.jar" | head -1)
             
-            # 권한 설정
-            sudo chmod 755 /opt/spring-app/app.jar
+            # JAR 파일을 애플리케이션 디렉토리로 이동
+            if [ -f "$JAR_FILE" ]; then
+              echo "JAR 파일을 애플리케이션 디렉토리로 이동 중..."
+              cp "$JAR_FILE" /opt/spring-app/application.jar
+              chmod 644 /opt/spring-app/application.jar
+            else
+              echo "JAR 파일을 찾을 수 없습니다!"
+              exit 1
+            fi
             
-            # Java로 애플리케이션 실행 (백그라운드에서)
-            cd /opt/spring-app
-            sudo nohup java -jar app.jar > app.log 2>&1 &
+            # 서비스 파일 생성 (없는 경우)
+            if [ ! -f /etc/systemd/system/spring-app.service ]; then
+              echo "서비스 파일 생성 중..."
+              echo '[Unit]
+            Description=Spring Boot Application
+            After=network.target
+
+            [Service]
+            User=lecture2quiz
+            Group=lecture2quiz
+            WorkingDirectory=/opt/spring-app
+            ExecStart=/usr/bin/java -jar /opt/spring-app/application.jar
+            SuccessExitStatus=143
+            Restart=always
+            RestartSec=5
+
+            [Install]
+            WantedBy=multi-user.target' | sudo tee /etc/systemd/system/spring-app.service
+              
+              sudo systemctl daemon-reload
+              sudo systemctl enable spring-app
+            fi
             
-            echo '애플리케이션이 백그라운드에서 시작되었습니다.'
-          "
+            # 서비스 시작
+            echo "애플리케이션 서비스 시작 중..."
+            sudo systemctl restart spring-app
+            sleep 10
+            
+            # 서비스 상태 확인
+            if systemctl is-active --quiet spring-app; then
+              echo "애플리케이션이 성공적으로 시작되었습니다!"
+              sudo systemctl status spring-app --no-pager
+            else
+              echo "애플리케이션 시작 실패. 로그 확인 중..."
+              sudo systemctl status spring-app --no-pager
+              sudo journalctl -u spring-app -n 50 --no-pager
+              exit 1
+            fi

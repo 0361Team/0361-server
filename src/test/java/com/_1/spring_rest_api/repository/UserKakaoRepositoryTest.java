@@ -30,30 +30,29 @@ class UserKakaoRepositoryTest {
     @Autowired
     private UserKakaoRepository userKakaoRepository;
 
-    @Autowired
-    private UserRepository userRepository;
-
     @Test
     void findByKakaoAccountId_shouldReturnUserKakao_whenExists() {
         // Given
         String kakaoAccountId = "kakao_123456789";
 
         // Create a user first
-        User user = new User();
-        user.setEmail("test@example.com");
-        user.setName("Test User");
-        user.setIsActive(true);
+        User user = User.builder()
+                .email("test@example.com")
+                .name("Test User")
+                .isActive(true)
+                .build();
         entityManager.persist(user);
 
         // Create and link UserKakao
-        UserKakao userKakao = new UserKakao();
-        userKakao.setUser(user);
-        userKakao.setKakaoAccountId(kakaoAccountId);
-        userKakao.setAccessToken("test_access_token");
-        userKakao.setRefreshToken("test_refresh_token");
-        userKakao.setTokenExpiresAt(LocalDateTime.now().plusHours(1));
-
+        UserKakao userKakao = UserKakao.builder()
+                .user(user)
+                .kakaoAccountId(kakaoAccountId)
+                .accessToken("test_access_token")
+                .refreshToken("test_refresh_token")
+                .tokenExpiresAt(LocalDateTime.now().plusHours(1))
+                .build();
         entityManager.persist(userKakao);
+
         entityManager.flush();
 
         // When
@@ -64,6 +63,7 @@ class UserKakaoRepositoryTest {
         assertEquals(kakaoAccountId, found.get().getKakaoAccountId());
         assertEquals(user.getId(), found.get().getUser().getId());
         assertEquals("test_access_token", found.get().getAccessToken());
+        assertEquals("test_refresh_token", found.get().getRefreshToken());
     }
 
     @Test
@@ -81,18 +81,20 @@ class UserKakaoRepositoryTest {
     @Test
     void save_shouldPersistUserKakao() {
         // Given
-        User user = new User();
-        user.setEmail("save_test@example.com");
-        user.setName("Save Test User");
-        user.setIsActive(true);
+        User user = User.builder()
+                .email("save_test@example.com")
+                .name("Save Test User")
+                .isActive(true)
+                .build();
         entityManager.persist(user);
 
-        UserKakao userKakao = new UserKakao();
-        userKakao.setUser(user);
-        userKakao.setKakaoAccountId("kakao_save_test_id");
-        userKakao.setAccessToken("save_test_access_token");
-        userKakao.setRefreshToken("save_test_refresh_token");
-        userKakao.setTokenExpiresAt(LocalDateTime.now().plusHours(1));
+        UserKakao userKakao = UserKakao.builder()
+                .user(user)
+                .kakaoAccountId("kakao_save_test_id")
+                .accessToken("save_test_access_token")
+                .refreshToken("save_test_refresh_token")
+                .tokenExpiresAt(LocalDateTime.now().plusHours(1))
+                .build();
 
         // When
         UserKakao saved = userKakaoRepository.save(userKakao);
@@ -109,20 +111,22 @@ class UserKakaoRepositoryTest {
     @Test
     void delete_shouldRemoveUserKakao() {
         // Given
-        User user = new User();
-        user.setEmail("delete_test@example.com");
-        user.setName("Delete Test User");
-        user.setIsActive(true);
+        User user = User.builder()
+                .email("delete_test@example.com")
+                .name("Delete Test User")
+                .isActive(true)
+                .build();
         entityManager.persist(user);
 
-        UserKakao userKakao = new UserKakao();
-        userKakao.setUser(user);
-        userKakao.setKakaoAccountId("kakao_delete_test_id");
-        userKakao.setAccessToken("delete_test_access_token");
-        userKakao.setRefreshToken("delete_test_refresh_token");
-        userKakao.setTokenExpiresAt(LocalDateTime.now().plusHours(1));
-
+        UserKakao userKakao = UserKakao.builder()
+                .user(user)
+                .kakaoAccountId("kakao_delete_test_id")
+                .accessToken("delete_test_access_token")
+                .refreshToken("delete_test_refresh_token")
+                .tokenExpiresAt(LocalDateTime.now().plusHours(1))
+                .build();
         entityManager.persist(userKakao);
+
         entityManager.flush();
 
         // When

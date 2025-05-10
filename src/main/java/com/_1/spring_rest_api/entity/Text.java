@@ -2,12 +2,16 @@ package com._1.spring_rest_api.entity;
 
 import com._1.spring_rest_api.entity.base.BaseTimeEntity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "TEXT")
 @Getter
+@SuperBuilder
+@AllArgsConstructor
 @NoArgsConstructor
 public class Text extends BaseTimeEntity {
 
@@ -25,4 +29,12 @@ public class Text extends BaseTimeEntity {
 
     @Column(name = "type")
     private String type;
+
+    // Week와 Text 간의 양방향 연관관계 메서드
+    public void changeWeek(Week week) {
+        this.week = week;
+        if (week != null && !week.getTexts().contains(this)) {
+            week.getTexts().add(this);
+        }
+    }
 }

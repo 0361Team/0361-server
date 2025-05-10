@@ -154,25 +154,27 @@ class UserServiceTest {
 
     // 헬퍼 메서드 - 테스트 사용자 생성
     private User createTestUser() {
-        User user = new User();
-        user.setEmail(TEST_EMAIL);
-        user.setName(TEST_NAME);
-        user.setIsActive(true);
+        User user = User.builder()
+                .email(TEST_EMAIL)
+                .name(TEST_NAME)
+                .isActive(true)
+                .build();
         return userRepository.save(user);
     }
 
     // 헬퍼 메서드 - 테스트 카카오 계정 정보 생성
     private UserKakao createTestUserKakao(User user) {
-        UserKakao userKakao = new UserKakao();
-        userKakao.setUser(user);
-        userKakao.setKakaoAccountId(KAKAO_ID);
-        userKakao.setAccessToken("test_access_token");
-        userKakao.setRefreshToken("test_refresh_token");
-        userKakao.setTokenExpiresAt(LocalDateTime.now().plusHours(1));
+        UserKakao userKakao = UserKakao.builder()
+                .user(user)
+                .kakaoAccountId(KAKAO_ID)
+                .accessToken("test_access_token")
+                .refreshToken("test_refresh_token")
+                .tokenExpiresAt(LocalDateTime.now().plusHours(1))
+                .build();
         UserKakao saved = userKakaoRepository.save(userKakao);
 
-        // User와 UserKakao 연결 (양방향 관계)
-        user.setUserKakao(saved);
+        userKakao.linkWithUser(user);
+
         userRepository.save(user);
 
         return saved;

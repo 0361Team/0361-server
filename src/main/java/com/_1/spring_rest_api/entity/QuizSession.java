@@ -3,12 +3,16 @@ package com._1.spring_rest_api.entity;
 
 import com._1.spring_rest_api.entity.base.BaseTimeEntity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "QUIZ_SESSION")
 @Getter
+@SuperBuilder
+@AllArgsConstructor
 @NoArgsConstructor
 public class QuizSession extends BaseTimeEntity {
 
@@ -27,4 +31,20 @@ public class QuizSession extends BaseTimeEntity {
 
     @Column(name = "current_question_index")
     private Integer currentQuestionIndex;
+
+    // User와 QuizSession 간의 양방향 연관관계 메서드
+    public void changeUser(User user) {
+        this.user = user;
+        if (user != null && !user.getQuizSessions().contains(this)) {
+            user.getQuizSessions().add(this);
+        }
+    }
+
+    // CustomQuiz와 QuizSession 간의 양방향 연관관계 메서드
+    public void changeQuiz(CustomQuiz quiz) {
+        this.quiz = quiz;
+        if (quiz != null && !quiz.getQuizSessions().contains(this)) {
+            quiz.getQuizSessions().add(this);
+        }
+    }
 }
