@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FlashcardDTO {
+public class QuestionDto {
 
     private String front;
     private String back;

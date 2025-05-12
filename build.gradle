@@ -22,13 +22,25 @@ configurations {
 repositories {
 	mavenCentral()
 	maven { url 'https://repo.spring.io/milestone' }
+	maven { url 'https://repo.spring.io/snapshot' }
+}
+
+dependencyManagement {
+	imports {
+		mavenBom 'org.springframework.ai:spring-ai-bom:1.0.0-SNAPSHOT'
+	}
 }
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// swagger
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+
+	// Spring AI 의존성
+	implementation 'org.springframework.ai:spring-ai-starter-model-anthropic'
 
 	// Spring Security OAuth2 Client
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
