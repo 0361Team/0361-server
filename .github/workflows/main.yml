@@ -1,128 +1,78 @@
-name: 스프링 앱 배포
+name: Build, Push to Artifact Registry and Deploy to Cloud Run
 
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
     steps:
-      - name: 코드 체크아웃
-        uses: actions/checkout@v3
-      
-      - name: JDK 설정
-        uses: actions/setup-java@v3
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: gradle
-      
-      - name: Gradle 빌드
-        run: |
-          chmod +x ./gradlew
-          ./gradlew build -x test
-      
-      - name: JAR 파일 확인
-        run: |
-          # 빌드된 JAR 파일 확인
-          echo "빌드된 JAR 파일 목록:"
-          find build/libs -type f -name "*.jar" -exec ls -la {} \;
-      
-      - name: Google Cloud 인증
-        uses: google-github-actions/auth@v1
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
-      
-      - name: gcloud 설정
-        uses: google-github-actions/setup-gcloud@v1
-      
-      - name: 배포 준비 및 애플리케이션 중지
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.GCE_HOST }}
-          username: lecture2quiz
-          key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
-          port: 22
-          script: |
-            # 애플리케이션 디렉토리 생성
-            mkdir -p /opt/spring-app
-            
-            # 현재 실행 중인 애플리케이션 중지
-            if pgrep -f "java -jar /opt/spring-app/application.jar"; then
-              echo "기존 애플리케이션 중지 중..."
-              pkill -f "java -jar /opt/spring-app/application.jar"
-              sleep 5
-            fi
-      
-      - name: JAR 파일 전송
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.GCE_HOST }}
-          username: lecture2quiz
-          key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
-          port: 22
-          source: "build/libs/*.jar"
-          target: "/tmp"
-          strip_components: 2
-      
-      - name: 애플리케이션 배포 및 시작
-        uses: appleboy/ssh-action@master
-        with:
-          host: lecture2quiz@spring-app-instance
-          username: lecture2quiz
-          key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
-          port: 22
-          script: |
-            # JAR 파일 찾기
-            JAR_FILE=$(find /tmp -name "*.jar" -not -name "*-plain.jar" | head -1)
-            
-            # JAR 파일을 애플리케이션 디렉토리로 이동
-            if [ -f "$JAR_FILE" ]; then
-              echo "JAR 파일을 애플리케이션 디렉토리로 이동 중..."
-              cp "$JAR_FILE" /opt/spring-app/application.jar
-              chmod 644 /opt/spring-app/application.jar
-            else
-              echo "JAR 파일을 찾을 수 없습니다!"
-              exit 1
-            fi
-            
-            # 서비스 파일 생성 (없는 경우)
-            if [ ! -f /etc/systemd/system/spring-app.service ]; then
-              echo "서비스 파일 생성 중..."
-              echo '[Unit]
-            Description=Spring Boot Application
-            After=network.target
+      - uses: 'actions/checkout@v4'
 
-            [Service]
-            User=lecture2quiz
-            Group=lecture2quiz
-            WorkingDirectory=/opt/spring-app
-            ExecStart=/usr/bin/java -jar /opt/spring-app/application.jar
-            SuccessExitStatus=143
-            Restart=always
-            RestartSec=5
+      # Google Cloud 인증 설정 (IAM 서비스 계정 키 사용)
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-            [Install]
-            WantedBy=multi-user.target' | sudo tee /etc/systemd/system/spring-app.service
-              
-              sudo systemctl daemon-reload
-              sudo systemctl enable spring-app
-            fi
-            
-            # 서비스 시작
-            echo "애플리케이션 서비스 시작 중..."
-            sudo systemctl restart spring-app
-            sleep 10
-            
-            # 서비스 상태 확인
-            if systemctl is-active --quiet spring-app; then
-              echo "애플리케이션이 성공적으로 시작되었습니다!"
-              sudo systemctl status spring-app --no-pager
-            else
-              echo "애플리케이션 시작 실패. 로그 확인 중..."
-              sudo systemctl status spring-app --no-pager
-              sudo journalctl -u spring-app -n 50 --no-pager
-              exit 1
-            fi
+      # gcloud CLI 설정
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      # Artifact Registry에 인증
+      - name: 'Configure Docker for Artifact Registry'
+        run: |
+          gcloud auth configure-docker ${{ secrets.GCP_REPOSITORY_REGION }}-docker.pkg.dev --quiet
+
+      # Docker 이미지 빌드 및 Artifact Registry 푸시
+      - name: 'Build and Push Docker image to Artifact Registry'
+        run: |
+          # 이미지에 고유 태그 부여 (커밋 해시 및 날짜 사용)
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+          export IMAGE_NAME="${{secrets.GCP_REPOSITORY_REGION}}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_REPOSITORY_NAME }}/${{ secrets.GCP_SERVICE_NAME }}:${{ github.sha }}-${TIMESTAMP}"
+          # Docker 빌드 및 푸시
+          docker build -t $IMAGE_NAME .
+          docker push $IMAGE_NAME
+          
+          # 추가로 latest 태그 설정 (main 브랜치인 경우)
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            LATEST_TAG="${{ secrets.GCP_REPOSITORY_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_REPOSITORY_NAME }}/${{ secrets.GCP_SERVICE_NAME }}:latest"
+            docker tag $IMAGE_NAME $LATEST_TAG
+            docker push $LATEST_TAG
+            echo "Pushed latest tag: $LATEST_TAG"
+          fi
+          
+          # 다음 단계를 위해 이미지 이름 저장
+          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+
+      # main 브랜치에서만 Cloud Run 배포 실행
+      - id: 'deploy'
+        name: 'Deploy to Cloud Run'
+        if: github.ref == 'refs/heads/main'
+        uses: 'google-github-actions/deploy-cloudrun@v2'
+        with:
+          service: '${{ secrets.GCP_SERVICE_NAME }}'
+          image: '${{ env.IMAGE_NAME }}'
+          region: '${{ secrets.GCP_REPOSITORY_REGION }}'
+          env_vars: |
+            SPRING_PROFILES_ACTIVE=prod
+            API_URL=${{ secrets.API_URL }}
+          cpu: '1'
+          memory: '512Mi'
+          min-instances: '0'
+          max-instances: '1'
+          timeout: '300s'
+          # vpc-connector: 'projects/${{ secrets.GCP_PROJECT_ID }}/locations/${{ secrets.GCP_REGION }}/connectors/my-vpc-connector'
+
+      # 배포 URL 출력
+      - name: 'Show Deployment URL'
+        if: github.ref == 'refs/heads/main'
+        run: 'echo 서비스가 배포되었습니다: ${{ steps.deploy.outputs.url }}'

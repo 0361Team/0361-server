@@ -175,5 +175,6 @@ gradle-app.setting
 
 ### 사용자 보안 ###
 src/main/resources/application-secret.properties
+.secrets
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,macos,git,java,gradle,intellij,netbeans
