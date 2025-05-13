@@ -4,7 +4,7 @@ import com._1.spring_rest_api.api.dto.QuestionDto;
 import com._1.spring_rest_api.entity.Question;
 import com._1.spring_rest_api.entity.Week;
 import com._1.spring_rest_api.repository.QuestionRepository;
-import com._1.spring_rest_api.repository.WeekRepository;
+import com._1.spring_rest_api.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
