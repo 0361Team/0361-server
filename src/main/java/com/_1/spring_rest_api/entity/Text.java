@@ -37,4 +37,14 @@ public class Text extends BaseTimeEntity {
             week.getTexts().add(this);
         }
     }
+
+    // 컨텐츠 업데이트 메서드
+    public void updateContent(String content) {
+        this.content = content;
+    }
+
+    // 타입 업데이트 메서드
+    public void updateType(String type) {
+        this.type = type;
+    }
 }
