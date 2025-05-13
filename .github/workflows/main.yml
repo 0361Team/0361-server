@@ -31,15 +31,18 @@ jobs:
       - name: 'Configure Docker for Artifact Registry'
         run: |
           gcloud auth configure-docker ${{ secrets.GCP_REPOSITORY_REGION }}-docker.pkg.dev --quiet
-
-      # Docker 이미지 빌드 및 Artifact Registry 푸시
+      # 이미지 빌드 전에 properties 파일 복원
+      - name: 'Decode and create secret properties file'
+        run: |
+          echo "${{ secrets.SPRING_SECRET_PROPERTIES }}" | base64 -d > src/main/resources/application-secret.properties
+        # Docker 이미지 빌드 및 Artifact Registry 푸시
       - name: 'Build and Push Docker image to Artifact Registry'
         run: |
           # 이미지에 고유 태그 부여 (커밋 해시 및 날짜 사용)
           TIMESTAMP=$(date +%Y%m%d%H%M%S)
           export IMAGE_NAME="${{secrets.GCP_REPOSITORY_REGION}}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_REPOSITORY_NAME }}/${{ secrets.GCP_SERVICE_NAME }}:${{ github.sha }}-${TIMESTAMP}"
           # Docker 빌드 및 푸시
-          docker build -t $IMAGE_NAME .
+          docker build --platform=linux/amd64 -t $IMAGE_NAME .
           docker push $IMAGE_NAME
           
           # 추가로 latest 태그 설정 (main 브랜치인 경우)
@@ -65,10 +68,6 @@ jobs:
           env_vars: |
             SPRING_PROFILES_ACTIVE=prod
             API_URL=${{ secrets.API_URL }}
-          cpu: '1'
-          memory: '512Mi'
-          min-instances: '0'
-          max-instances: '1'
           timeout: '300s'
           # vpc-connector: 'projects/${{ secrets.GCP_PROJECT_ID }}/locations/${{ secrets.GCP_REGION }}/connectors/my-vpc-connector'
 
