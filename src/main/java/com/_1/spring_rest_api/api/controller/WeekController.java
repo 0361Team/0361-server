@@ -102,7 +102,7 @@ public class WeekController {
         weekService.deleteWeek(weekId);
         return ResponseEntity.noContent().build();
     }
-
+/*
     @Operation(summary = "Week에 Text 추가", description = "특정 Week에 Text를 추가합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "추가 성공"),
@@ -206,4 +206,5 @@ public class WeekController {
             @PathVariable Long quizMappingId) {
         return ResponseEntity.ok(weekService.removeQuizFromWeek(weekId, quizMappingId));
     }
+ */
 }
