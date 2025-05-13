@@ -1,7 +1,6 @@
 package com._1.spring_rest_api.service;
 
-import com._1.spring_rest_api.api.dto.FlashcardDTO;
-import com._1.spring_rest_api.api.dto.FlashcardsRequest;
+import com._1.spring_rest_api.api.dto.QuestionDto;
 import com._1.spring_rest_api.entity.Question;
 import com._1.spring_rest_api.entity.Week;
 import com._1.spring_rest_api.repository.QuestionRepository;
@@ -21,20 +20,31 @@ public class QuestionCommandServiceImpl implements QuestionCommandService {
 
     private final QuestionRepository questionRepository;
     private final WeekRepository weekRepository;
+    private final ClaudeService claudeService;
 
-
-    @Override
-    public List<Long> saveFlashcards(Long weekId, FlashcardsRequest request) {
+    /**
+     * 주차 내용을 기반으로 AI를 사용하여 자동으로 질문을 생성하고 저장합니다.
+     * @param weekId 주차 ID
+     * @param minQuestionCount 생성할 최소 질문 수
+     * @return 생성된 질문 ID 목록
+     */
+    @Transactional
+    public List<Long> generateAndSaveQuestions(Long weekId, int minQuestionCount) {
+        // 주차 확인
         Week week = weekRepository.findById(weekId)
                 .orElseThrow(() -> new EntityNotFoundException("Week not found with id: " + weekId));
 
-        List<Long> savedQuestionIds = new ArrayList<>();
+        // AI를 사용하여 질문 생성
+        List<QuestionDto> generatedQuestions =
+                claudeService.generateQuestionsFromWeekTexts(weekId, minQuestionCount);
 
-        for (FlashcardDTO flashcard : request.getFlashcards()) {
+        // 생성된 질문을 저장
+        List<Long> savedQuestionIds = new ArrayList<>();
+        for (QuestionDto questionDto : generatedQuestions) {
             Question question = Question.builder()
                     .week(week)
-                    .front(flashcard.getFront())
-                    .back(flashcard.getBack())
+                    .front(questionDto.getFront())
+                    .back(questionDto.getBack())
                     .build();
 
             Question savedQuestion = questionRepository.save(question);
@@ -43,6 +53,7 @@ public class QuestionCommandServiceImpl implements QuestionCommandService {
 
         return savedQuestionIds;
     }
+
 
     // Question 삭제
     public void deleteQuestion(Long questionId) {
