@@ -8,6 +8,6 @@ import lombok.Getter;
 public class WeekResponse {
 
     private Long id;
-    private CourseResponse course;
+    private Long courseId;
     private String title;
 }

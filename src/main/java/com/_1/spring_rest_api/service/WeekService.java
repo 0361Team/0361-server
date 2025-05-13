@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -57,6 +58,7 @@ public class WeekService {
         Week week = Week.builder()
                 .title(title)
                 .weekNumber(weekNumber)
+                .course(course)
                 .build();
 
         week.changeCourse(course);
