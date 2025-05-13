@@ -69,6 +69,7 @@ jobs:
             SPRING_PROFILES_ACTIVE=prod
             API_URL=${{ secrets.API_URL }}
           timeout: '300s'
+          flags: '--allow-unauthenticated --cpu=1 --memory=512Mi --min-instances=0 --max-instances=1'
           # vpc-connector: 'projects/${{ secrets.GCP_PROJECT_ID }}/locations/${{ secrets.GCP_REGION }}/connectors/my-vpc-connector'
 
       # 배포 URL 출력
