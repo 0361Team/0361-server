@@ -3,6 +3,7 @@ package com._1.spring_rest_api.api.controller;
 import com._1.spring_rest_api.api.dto.TextCreateRequest;
 import com._1.spring_rest_api.api.dto.TextResponse;
 import com._1.spring_rest_api.api.dto.TextUpdateRequest;
+import com._1.spring_rest_api.service.ClaudeService;
 import com._1.spring_rest_api.service.TextCommandService;
 import com._1.spring_rest_api.service.TextQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,6 +27,7 @@ public class TextController {
 
     private final TextQueryService textQueryService;
     private final TextCommandService textCommandService;
+    private final ClaudeService claudeService;
 
     @PostMapping
     @Operation(
@@ -111,5 +113,17 @@ public class TextController {
 
         int deletedCount = textCommandService.deleteAllTextsByWeekId(weekId);
         return ResponseEntity.ok(Map.of("deletedCount", deletedCount));
+    }
+
+    @GetMapping("/summation/{textId}")
+    @Operation(
+            summary = "강의 요약 데이터 조회",
+            description = "요약된 강의 정보를 제공합니다."
+    )
+    public ResponseEntity<?> getSummationById(
+            @PathVariable Long textId
+    ) {
+        String summation = claudeService.generateSummation(textId);
+        return ResponseEntity.ok(summation);
     }
 }
