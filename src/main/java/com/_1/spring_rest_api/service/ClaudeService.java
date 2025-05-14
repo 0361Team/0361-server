@@ -67,6 +67,13 @@ public class ClaudeService {
         return generateQuestionsFromContent(combinedContent, minQuestionCount);
     }
 
+    public String generateSummation(Long textId) {
+        Text text = textRepository.findById(textId).orElseThrow(
+                () -> new EntityNotFoundException("Text not found with id: " + textId));
+
+        return generateSummationByClaude(text);
+    }
+
     /**
      * 주어진 텍스트 내용을 기반으로 질문을 생성합니다.
      */
@@ -101,12 +108,6 @@ public class ClaudeService {
         // Prompt 생성 및 AI 모델 호출
         Prompt prompt = new Prompt(List.of(systemMessage, userMessage));
 
-        // 모델 파라미터 설정
-        AnthropicChatOptions options = AnthropicChatOptions.builder()
-                .temperature(0.7)
-                .maxTokens(4000)
-                .build();
-
         try {
             ChatResponse response = chatModel.call(prompt);
             String responseContent = response.getResult().getOutput().getText();
@@ -118,6 +119,36 @@ public class ClaudeService {
             );
         } catch (Exception e) {
             throw new RuntimeException("AI 모델을 통한 질문 생성에 실패했습니다: " + e.getMessage(), e);
+        }
+    }
+
+    private String generateSummationByClaude(Text text) {
+        String systemPrompt = """
+            당신은 교육 자료 요약 전문가입니다.
+            주어진 교육 자료를 분석하여 핵심 내용을 간결하고 명확하게 요약해야 합니다.
+            
+            요약 규칙:
+            1. 교육 자료의 핵심 개념과 중요 정보를 중심으로 요약하세요.
+            2. 요약은 원본의 약 20~30% 분량으로 작성하되, 중요한 정보는 모두 포함해야 합니다.
+            3. 전문 용어나 개념이 등장할 경우 간략한 설명을 함께 제공하세요.
+            4. 요약된 내용은 논리적인 흐름을 유지해야 합니다.
+            5. 불필요한 반복이나 부가 설명은 제외하고 핵심 내용만 포함하세요.
+            6. 요약은 원본의 구조를 반영해야 하며, 필요한 경우 섹션별로 구분하세요.
+            """;
+
+        Message systemMessage = new SystemMessage(systemPrompt);
+        UserMessage userMessage = new UserMessage(
+                "다음 교육 자료를 요약해주세요: \n\n" + text.getContent()
+        );
+
+        // Prompt 생성 및 AI 모델 호출
+        Prompt prompt = new Prompt(List.of(systemMessage, userMessage));
+
+        try {
+            ChatResponse response = chatModel.call(prompt);
+            return response.getResult().getOutput().getText();
+        } catch (Exception e) {
+            throw new RuntimeException("AI 모델을 통한 텍스트 요약에 실패했습니다: " + e.getMessage(), e);
         }
     }
 }
