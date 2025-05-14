@@ -126,6 +126,6 @@ public class Week extends BaseTimeEntity {
     }
 
     public WeekResponse toWeekResponse() {
-        return new WeekResponse(id, course.toCourseResponse(), title);
+        return new WeekResponse(id, course.getId(), title);
     }
 }
