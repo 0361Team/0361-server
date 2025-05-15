@@ -12,4 +12,5 @@ public class TextResponse {
     private Long weekId;
     private String content;
     private String type;
+    private String summation;
 }
