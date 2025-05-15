@@ -8,6 +8,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,9 +22,8 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Service
+@Slf4j
 public class JwtService {
-
-    private static final Logger logger = LoggerFactory.getLogger(JwtService.class);
 
     @Value("${jwt.secret}")
     private String secretKey;
@@ -34,7 +34,7 @@ public class JwtService {
         try {
             return extractClaim(token, Claims::getSubject);
         } catch (Exception e) {
-            logger.error("Error extracting username from token: {}", e.getMessage());
+            log.error("Error extracting username from token: {}", e.getMessage());
             return null;
         }
     }
@@ -43,7 +43,7 @@ public class JwtService {
         try {
             return extractClaim(token, Claims::getExpiration);
         } catch (Exception e) {
-            logger.error("Error extracting expiration from token: {}", e.getMessage());
+            log.error("Error extracting expiration from token: {}", e.getMessage());
             return null;
         }
     }
@@ -61,19 +61,19 @@ public class JwtService {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (ExpiredJwtException e) {
-            logger.warn("Token expired: {}", e.getMessage());
+            log.warn("Token expired: {}", e.getMessage());
             throw e;
         } catch (UnsupportedJwtException e) {
-            logger.error("Unsupported JWT: {}", e.getMessage());
+            log.error("Unsupported JWT: {}", e.getMessage());
             throw e;
         } catch (MalformedJwtException e) {
-            logger.error("Malformed JWT: {}", e.getMessage());
+            log.error("Malformed JWT: {}", e.getMessage());
             throw e;
         } catch (SignatureException e) {
-            logger.error("Invalid JWT signature: {}", e.getMessage());
+            log.error("Invalid JWT signature: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
-            logger.error("Error parsing JWT: {}", e.getMessage());
+            log.error("Error parsing JWT: {}", e.getMessage());
             throw e;
         }
     }
@@ -90,7 +90,7 @@ public class JwtService {
         } catch (ExpiredJwtException e) {
             return true;
         } catch (Exception e) {
-            logger.error("Error checking token expiration: {}", e.getMessage());
+            log.error("Error checking token expiration: {}", e.getMessage());
             return true; // 예외 발생 시 토큰을 만료된 것으로 간주
         }
     }
@@ -114,7 +114,7 @@ public class JwtService {
                     .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                     .compact();
         } catch (Exception e) {
-            logger.error("Error creating token: {}", e.getMessage());
+            log.error("Error creating token: {}", e.getMessage());
             throw new RuntimeException("Could not create token", e);
         }
     }
@@ -124,19 +124,19 @@ public class JwtService {
             final String username = extractUsername(token);
             return (username != null && username.equals(userDetails.getUsername()) && !isTokenExpired(token));
         } catch (ExpiredJwtException e) {
-            logger.warn("Expired JWT token: {}", e.getMessage());
+            log.warn("Expired JWT token: {}", e.getMessage());
             return false;
         } catch (SignatureException e) {
-            logger.error("Invalid JWT signature: {}", e.getMessage());
+            log.error("Invalid JWT signature: {}", e.getMessage());
             return false;
         } catch (MalformedJwtException e) {
-            logger.error("Invalid JWT token: {}", e.getMessage());
+            log.error("Invalid JWT token: {}", e.getMessage());
             return false;
         } catch (UnsupportedJwtException e) {
-            logger.error("Unsupported JWT token: {}", e.getMessage());
+            log.error("Unsupported JWT token: {}", e.getMessage());
             return false;
         } catch (Exception e) {
-            logger.error("JWT token validation error: {}", e.getMessage());
+            log.error("JWT token validation error: {}", e.getMessage());
             return false;
         }
     }
