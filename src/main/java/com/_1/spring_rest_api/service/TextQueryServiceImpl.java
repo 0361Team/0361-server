@@ -54,6 +54,7 @@ public class TextQueryServiceImpl implements TextQueryService{
                 .id(text.getId())
                 .weekId(text.getWeek() != null ? text.getWeek().getId() : null)
                 .content(text.getContent())
+                .summation(text.getSummation())
                 .type(text.getType())
                 .build();
     }

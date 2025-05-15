@@ -115,12 +115,12 @@ public class TextController {
         return ResponseEntity.ok(Map.of("deletedCount", deletedCount));
     }
 
-    @GetMapping("/summation/{textId}")
+    @PostMapping("/summation/{textId}")
     @Operation(
-            summary = "강의 요약 데이터 조회",
-            description = "요약된 강의 정보를 제공합니다."
+            summary = "강의 요약 데이터 생성",
+            description = "강의에 관련된 text가 존재해야 요약을 만들 수 있습니다."
     )
-    public ResponseEntity<?> getSummationById(
+    public ResponseEntity<?> creatSummationById(
             @PathVariable Long textId
     ) {
         String summation = claudeService.generateSummation(textId);

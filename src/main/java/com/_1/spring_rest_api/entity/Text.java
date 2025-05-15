@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Entity
@@ -26,6 +27,10 @@ public class Text extends BaseTimeEntity {
 
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
+
+    @Setter
+    @Column(name = "summation", columnDefinition = "TEXT")
+    private String summation;
 
     @Column(name = "type")
     private String type;

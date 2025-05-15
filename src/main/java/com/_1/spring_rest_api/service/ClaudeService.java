@@ -8,7 +8,6 @@ import com._1.spring_rest_api.repository.WeekRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.ai.anthropic.AnthropicChatOptions;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
@@ -23,7 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional
 public class ClaudeService {
 
     private final ObjectMapper objectMapper;
@@ -80,7 +79,7 @@ public class ClaudeService {
             content = content.substring(0, 30000);
         }
 
-        return generateSummationByClaude(content);
+        return generateSummationByClaude(textId, content);
     }
 
     /**
@@ -131,7 +130,7 @@ public class ClaudeService {
         }
     }
 
-    private String generateSummationByClaude(String text) {
+    private String generateSummationByClaude(Long textId, String text) {
         String cleanText = text
                 .replace("\\n", "\n")
                 .replaceAll("\\\\n", "\n");
@@ -178,9 +177,18 @@ public class ClaudeService {
 
         try {
             ChatResponse response = chatModel.call(prompt);
-            return response.getResult().getOutput().getText();
+            String responseContent = response.getResult().getOutput().getText();
+            saveSummation(textId, responseContent);
+            return responseContent;
         } catch (Exception e) {
             throw new RuntimeException("AI 모델을 통한 텍스트 요약에 실패했습니다: " + e.getMessage(), e);
         }
+    }
+
+    private void saveSummation(Long textId, String content) {
+        Text text = textRepository.findById(textId).orElseThrow(
+                () -> new EntityNotFoundException("Text not found with id: " + textId));
+        text.setSummation(content);
+        textRepository.save(text);
     }
 }
