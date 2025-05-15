@@ -56,4 +56,12 @@ public class CustomQuizController {
         QuizDetailResponse quiz = quizQueryService.getQuizDetail(quizId);
         return ResponseEntity.ok(quiz);
     }
+
+    @DeleteMapping("/{quizId}")
+    @Operation(summary = "퀴즈 삭제", description = "퀴즈 ID로 특정 퀴즈를 삭제합니다")
+    public ResponseEntity<Void> deleteQuiz(
+            @Parameter(description = "퀴즈 ID") @PathVariable Long quizId) {
+        quizCommandService.deleteQuiz(quizId);
+        return ResponseEntity.noContent().build();
+    }
 }

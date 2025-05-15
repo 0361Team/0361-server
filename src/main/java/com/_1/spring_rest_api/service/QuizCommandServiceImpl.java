@@ -26,6 +26,7 @@ public class QuizCommandServiceImpl implements QuizCommandService{
     /**
      * 사용자 ID, 주차 ID 리스트, 그리고 질문 ID 리스트(선택)를 기반으로 새 퀴즈를 생성합니다.
      */
+    @Override
     public Long createQuiz(CreateQuizRequest request) {
         // 사용자 찾기
         User user = userRepository.findById(request.getUserId())
@@ -44,6 +45,14 @@ public class QuizCommandServiceImpl implements QuizCommandService{
         processQuestions(request, savedQuiz);
 
         return savedQuiz.getId();
+    }
+
+    @Override
+    public void deleteQuiz(Long quizId) {
+        if (!customQuizRepository.existsById(quizId)) {
+            throw new EntityNotFoundException("Quiz not found with id: " + quizId);
+        }
+        customQuizRepository.deleteById(quizId);
     }
 
     // 주차와 퀴즈 연결
