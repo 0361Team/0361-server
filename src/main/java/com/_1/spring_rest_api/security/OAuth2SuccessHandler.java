@@ -1,11 +1,11 @@
 package com._1.spring_rest_api.security;
 
 import com._1.spring_rest_api.entity.User;
-import com._1.spring_rest_api.entity.UserKakao;
 import com._1.spring_rest_api.service.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -17,15 +17,11 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 @Component
+@RequiredArgsConstructor
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final UserService userService;
     private final JwtService jwtService;
-
-    public OAuth2SuccessHandler(UserService userService, JwtService jwtService) {
-        this.userService = userService;
-        this.jwtService = jwtService;
-    }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -55,7 +51,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         User user = userService.findByKakaoId(kakaoId);
 
         if (user == null) {
-            // Create new user
             user = userService.createKakaoUser(email, nickname, kakaoId);
         }
 
@@ -69,8 +64,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // Generate JWT and send to client
         String jwt = jwtService.generateToken(userService.createUserDetails(user));
 
-        // Redirect to frontend with token
-        // For mobile apps, you might want to use a custom URL scheme or deep link
         response.sendRedirect("myapp://auth?token=" + jwt);
     }
 }
