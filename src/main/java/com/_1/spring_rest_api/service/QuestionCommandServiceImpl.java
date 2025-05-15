@@ -1,6 +1,7 @@
 package com._1.spring_rest_api.service;
 
 import com._1.spring_rest_api.api.dto.QuestionDto;
+import com._1.spring_rest_api.converter.QuestionGenerationConverter;
 import com._1.spring_rest_api.entity.Question;
 import com._1.spring_rest_api.entity.Week;
 import com._1.spring_rest_api.repository.QuestionRepository;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -21,6 +23,7 @@ public class QuestionCommandServiceImpl implements QuestionCommandService {
     private final QuestionRepository questionRepository;
     private final WeekRepository weekRepository;
     private final ClaudeService claudeService;
+    private final QuestionGenerationConverter questionGenerationConverter;
 
     /**
      * 주차 내용을 기반으로 AI를 사용하여 자동으로 질문을 생성하고 저장합니다.
@@ -38,18 +41,12 @@ public class QuestionCommandServiceImpl implements QuestionCommandService {
         List<QuestionDto> generatedQuestions =
                 claudeService.generateQuestionsFromWeekTexts(weekId, minQuestionCount);
 
-        // 생성된 질문을 저장
-        List<Long> savedQuestionIds = new ArrayList<>();
-        for (QuestionDto questionDto : generatedQuestions) {
-            Question question = Question.builder()
-                    .week(week)
-                    .front(questionDto.getFront())
-                    .back(questionDto.getBack())
-                    .build();
-
-            Question savedQuestion = questionRepository.save(question);
-            savedQuestionIds.add(savedQuestion.getId());
-        }
+        // 생성된 질문을 저장 (컨버터 활용)
+        List<Long> savedQuestionIds = generatedQuestions.stream()
+                .map(dto -> questionGenerationConverter.createQuestionForWeek(dto, weekId))
+                .map(questionRepository::save)
+                .map(Question::getId)
+                .collect(Collectors.toList());
 
         return savedQuestionIds;
     }
