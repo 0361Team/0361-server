@@ -1,20 +1,22 @@
 package com._1.spring_rest_api.service;
 
 import com._1.spring_rest_api.api.dto.QuestionDto;
+import com._1.spring_rest_api.entity.Keyword;
 import com._1.spring_rest_api.entity.Text;
 import com._1.spring_rest_api.entity.Week;
+import com._1.spring_rest_api.repository.KeywordRepository;
 import com._1.spring_rest_api.repository.TextRepository;
 import com._1.spring_rest_api.repository.WeekRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,20 +25,14 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class ClaudeService {
 
     private final ObjectMapper objectMapper;
     private final TextRepository textRepository;
     private final WeekRepository weekRepository;
+    private final KeywordRepository keywordRepository;
     private final ChatModel chatModel;
-
-    @Autowired
-    public ClaudeService(TextRepository textRepository, WeekRepository weekRepository, ChatModel chatModel) {
-        this.objectMapper = new ObjectMapper();
-        this.textRepository = textRepository;
-        this.weekRepository = weekRepository;
-        this.chatModel = chatModel;
-    }
 
     /**
      * 주차 ID를 기반으로 해당 주차의 텍스트 내용을 가져와 질문을 생성합니다.
@@ -80,6 +76,88 @@ public class ClaudeService {
         }
 
         return generateSummationByClaude(textId, content);
+    }
+
+    public List<String> generateKeywords(Long textId) {
+        Text text = textRepository.findById(textId).orElseThrow(
+                () -> new EntityNotFoundException("Text not found with id: " + textId));
+        String content = text.getContent();
+
+        if (content.isEmpty() || content.isBlank()) {
+            throw new IllegalStateException("No text content found for week with id: " + textId);
+        }
+
+        if (content.length() > 30000) {
+            content = content.substring(0, 30000);
+        }
+
+        return generateKeywordsByClaude(textId, content);
+    }
+
+    private List<String> generateKeywordsByClaude(Long textId, String content) {
+        String cleanText = content
+                .replace("\\n", "\n")
+                .replaceAll("\\\\n", "\n");
+
+        String systemPrompt = """
+        당신은 교육 자료 분석 전문가입니다.
+        주어진 교육 자료를 분석하여 가장 중요하고 핵심적인 키워드를 추출해주세요.
+        
+        【키워드 추출 규칙】
+        1. 교육 자료의 핵심 주제와 개념을 대표하는 키워드를 선별하세요.
+        2. 정확히 7개의 키워드를 추출해주세요.
+        3. 각 키워드는 학습 내용의 중요 개념, 이론, 용어, 또는 기술을 대표해야 합니다.
+        4. 키워드는 1-3단어의 간결한 형태로 제시하세요.
+        5. 출력은 반드시 다음 JSON 형식을 엄격히 따라야 합니다:
+        ["키워드1", "키워드2", "키워드3", "키워드4", "키워드5", "키워드6", "키워드7"]
+        """;
+
+        Message systemMessage = new SystemMessage(systemPrompt);
+        UserMessage userMessage = new UserMessage(
+                "다음 교육 자료에서 핵심 키워드 7개를 추출해주세요: \n\n" + cleanText
+        );
+
+        // Prompt 생성 및 AI 모델 호출
+        Prompt prompt = new Prompt(List.of(systemMessage, userMessage));
+
+        try {
+            ChatResponse response = chatModel.call(prompt);
+            String responseContent = response.getResult().getOutput().getText();
+
+            List<String> keywords = objectMapper.readValue(
+                    responseContent,
+                    new TypeReference<List<String>>() {}
+            );
+
+            saveKeywords(textId, keywords);
+            return keywords;
+        } catch (Exception e) {
+            throw new RuntimeException("AI 모델을 통한 키워드 추출에 실패했습니다: " + e.getMessage(), e);
+        }
+    }
+
+    private void saveKeywords(Long textId, List<String> keywords) {
+        Text text = textRepository.findById(textId).orElseThrow(
+                () -> new EntityNotFoundException("Text not found with id: " + textId));
+
+        deleteExistingKeywords(text);
+
+        for (String keywordContent : keywords) {
+            Keyword keyword = Keyword.builder()
+                    .content(keywordContent)
+                    .text(text)
+                    .build();
+
+            keywordRepository.save(keyword);
+        }
+    }
+
+    // 기존 키워드 삭제 메서드 (옵션)
+    private void deleteExistingKeywords(Text text) {
+        List<Keyword> existingKeywords = keywordRepository.findAllByText(text);
+        if (!existingKeywords.isEmpty()) {
+            keywordRepository.deleteAll(existingKeywords);
+        }
     }
 
     /**
