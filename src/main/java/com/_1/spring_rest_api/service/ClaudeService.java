@@ -94,6 +94,14 @@ public class ClaudeService {
         return generateKeywordsByClaude(textId, content);
     }
 
+    @Transactional(readOnly = true)
+    public List<String> getKeywords(Long textId) {
+        Text text = textRepository.findById(textId).orElseThrow(
+                () -> new EntityNotFoundException("Text not found with id: " + textId));
+        List<Keyword> existingKeywords = keywordRepository.findAllByText(text);
+        return existingKeywords.stream().map(Keyword::getContent).collect(Collectors.toList());
+    }
+
     private List<String> generateKeywordsByClaude(Long textId, String content) {
         String cleanText = content
                 .replace("\\n", "\n")

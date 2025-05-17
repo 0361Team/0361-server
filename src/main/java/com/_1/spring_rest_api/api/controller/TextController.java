@@ -140,4 +140,16 @@ public class TextController {
         List<String> keywords = claudeService.generateKeywords(textId);
         return ResponseEntity.ok(keywords);
     }
+
+    @GetMapping("/keywords/{textId}")
+    @Operation(
+            summary = "키워드를 조회합니다.",
+            description = "textId로 생성된 키워드 7개를 조회합니다."
+    )
+    public ResponseEntity<List<String>> getKeywordsById(
+            @PathVariable Long textId
+    ) {
+        List<String> keywords = claudeService.getKeywords(textId);
+        return ResponseEntity.ok(keywords);
+    }
 }
