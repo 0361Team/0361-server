@@ -126,4 +126,30 @@ public class TextController {
         String summation = claudeService.generateSummation(textId);
         return ResponseEntity.ok(summation);
     }
+
+    @PostMapping("/keywords/{textId}")
+    @Operation(
+            summary = "키워드 데이터 생성",
+            description = "강의 데이터를 분석하여 핵심 키워드 7개를 자동으로 추출합니다. " +
+                    "이 기능은 강의 내용의 중요 개념을 빠르게 파악할 수 있도록 도와줍니다. " +
+                    "해당 강의에 이미 키워드가 존재하는 경우, 기존 키워드는 삭제되고 새로 생성된 키워드로 완전히 대체됩니다."
+    )
+    public ResponseEntity<?> createKeywordsById(
+            @PathVariable Long textId
+    ) {
+        List<String> keywords = claudeService.generateKeywords(textId);
+        return ResponseEntity.ok(keywords);
+    }
+
+    @GetMapping("/keywords/{textId}")
+    @Operation(
+            summary = "키워드를 조회합니다.",
+            description = "textId로 생성된 키워드 7개를 조회합니다."
+    )
+    public ResponseEntity<List<String>> getKeywordsById(
+            @PathVariable Long textId
+    ) {
+        List<String> keywords = claudeService.getKeywords(textId);
+        return ResponseEntity.ok(keywords);
+    }
 }
