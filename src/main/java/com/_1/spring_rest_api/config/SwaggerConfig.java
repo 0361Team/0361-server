@@ -15,7 +15,7 @@ import java.util.List;
 @Configuration    // 스프링 실행시 설정파일 읽어드리기 위한 어노테이션
 public class SwaggerConfig {
 
-    @Value("${server.api.url}")
+    @Value("${server.address}")
     private String serverApiUrl;
 
     @Bean
