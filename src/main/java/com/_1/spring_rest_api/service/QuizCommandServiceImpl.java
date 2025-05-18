@@ -4,9 +4,9 @@ import com._1.spring_rest_api.api.dto.CreateQuizRequest;
 import com._1.spring_rest_api.entity.*;
 import com._1.spring_rest_api.repository.*;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
