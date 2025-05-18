@@ -90,4 +90,8 @@ public class Question extends BaseTimeEntity {
                 .back(this.back) // 필드명 변경
                 .build();
     }
+
+    public boolean isCorrectAnswer(String answer) {
+        return this.back.trim().equalsIgnoreCase(answer.trim());
+    }
 }

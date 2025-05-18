@@ -7,4 +7,6 @@ public interface QuizCommandService {
     Long createQuiz(CreateQuizRequest request);
 
     void deleteQuiz(Long quizId);
+
+    Long startQuizSession(Long quizId, Long userId);
 }
