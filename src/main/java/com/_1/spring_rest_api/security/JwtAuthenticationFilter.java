@@ -43,6 +43,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         final String authHeader = request.getHeader("Authorization");
+
+        // 여기서 authHeader가 null인지 확인하고 null이면 다음 필터로 진행
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         final String jwt;
         final String userEmail;
 
