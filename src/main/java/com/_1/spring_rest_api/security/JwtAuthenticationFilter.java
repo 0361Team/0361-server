@@ -30,14 +30,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
+        // CORS 헤더 추가
+        response.setHeader("Access-Control-Allow-Origin", "*"); // 또는 특정 도메인
+        response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Requested-With");
+        response.setHeader("Access-Control-Max-Age", "3600");
+
+        // OPTIONS 메서드 처리 (사전 요청)
+        if (CorsUtils.isPreFlightRequest(request)) {
+            response.setStatus(HttpServletResponse.SC_OK);
+            return;
+        }
+
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String userEmail;
-
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
 
         if(CorsUtils.isPreFlightRequest(request)) {
             response.setStatus(HttpServletResponse.SC_OK);
