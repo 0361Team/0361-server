@@ -55,6 +55,31 @@ public class QuizCommandServiceImpl implements QuizCommandService{
         customQuizRepository.deleteById(quizId);
     }
 
+    @Override
+    public Long startQuizSession(Long quizId, Long userId) {
+        // 퀴즈 및 사용자 존재 확인
+        CustomQuiz quiz = customQuizRepository.findById(quizId)
+                .orElseThrow(() -> new EntityNotFoundException("Quiz not found with id: " + quizId));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+
+        // 새 퀴즈 세션 생성
+        QuizSession session = QuizSession.builder()
+                .user(user)
+                .quiz(quiz)
+                .currentQuestionIndex(0) // 첫 번째 질문부터 시작
+                .build();
+
+        // 양방향 연관관계 설정
+        session.changeUser(user);
+        session.changeQuiz(quiz);
+
+        // 저장 및 ID 반환
+        QuizSession savedSession = quizSessionRepository.save(session);
+        return savedSession.getId();
+    }
+
     // 주차와 퀴즈 연결
     private void connectWeeksToQuiz(List<Long> weekIds, CustomQuiz quiz) {
         if (weekIds == null || weekIds.isEmpty()) {

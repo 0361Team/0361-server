@@ -64,4 +64,13 @@ public class CustomQuizController {
         quizCommandService.deleteQuiz(quizId);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{quizId}/start")
+    @Operation(summary = "퀴즈 세션 시작", description = "사용자가 특정 퀴즈를 시작하여 퀴즈 세션을 생성합니다")
+    public ResponseEntity<Long> startQuizSession(
+            @Parameter(description = "퀴즈 ID") @PathVariable Long quizId,
+            @Parameter(description = "사용자 ID") @RequestParam Long userId) {
+        Long sessionId = quizCommandService.startQuizSession(quizId, userId);
+        return ResponseEntity.ok(sessionId);
+    }
 }
