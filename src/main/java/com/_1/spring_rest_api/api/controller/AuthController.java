@@ -3,6 +3,7 @@ package com._1.spring_rest_api.api.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,6 +14,9 @@ import org.springframework.web.servlet.view.RedirectView;
 @Tag(name = "인증 API", description = "사용자 인증 관련 API")
 public class AuthController {
 
+    @Value("${api.server.url}")
+    private String serverApiUrl;
+
     @GetMapping("/kakao")
     @Operation(
             summary = "카카오 OAuth2 로그인",
@@ -21,7 +25,7 @@ public class AuthController {
     @SecurityRequirements
     public RedirectView kakaoLogin() {
         RedirectView redirectView = new RedirectView();
-        redirectView.setUrl("/oauth2/authorization/kakao");
+        redirectView.setUrl(serverApiUrl + "/oauth2/authorization/kakao");
         return redirectView;
     }
 }
