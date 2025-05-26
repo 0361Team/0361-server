@@ -28,7 +28,7 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    private static final long TOKEN_VALIDITY = 1000 * 60 * 60 * 24; // 24 hours
+    private static final long TOKEN_VALIDITY = 1000 * 60 * 60 * 24 * 7; // 1 week
 
     public String extractUsername(String token) {
         try {
