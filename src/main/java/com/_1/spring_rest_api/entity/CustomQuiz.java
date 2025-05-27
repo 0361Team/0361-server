@@ -97,8 +97,6 @@ public class CustomQuiz extends BaseTimeEntity {
         this.updateTotalQuestions(this.totalQuestions + 1);
     }
 
-
-
     // CustomQuiz와 QuizSession 간의 양방향 연관관계 메서드
     public void addQuizSession(QuizSession session) {
         this.quizSessions.add(session);
@@ -111,21 +109,6 @@ public class CustomQuiz extends BaseTimeEntity {
         this.quizSessions.remove(session);
         if (session.getQuiz() == this) {
             session.changeQuiz(null);
-        }
-    }
-
-    // CustomQuiz와 QuizQuestionMapping 간의 양방향 연관관계 메서드
-    public void addQuizQuestionMapping(QuizQuestionMapping mapping) {
-        this.quizQuestionMappings.add(mapping);
-        if (mapping.getQuiz() != this) {
-            mapping.changeQuiz(this);
-        }
-    }
-
-    public void removeQuizQuestionMapping(QuizQuestionMapping mapping) {
-        this.quizQuestionMappings.remove(mapping);
-        if (mapping.getQuiz() == this) {
-            mapping.changeQuiz(null);
         }
     }
 

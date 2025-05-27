@@ -29,30 +29,9 @@ public class QuizQuestionMapping extends BaseTimeEntity {
     private Question question;
 
     public static QuizQuestionMapping create(CustomQuiz quiz, Question question) {
-        // 새 인스턴스 생성
-        QuizQuestionMapping mapping = QuizQuestionMapping.builder()
+        return QuizQuestionMapping.builder()
+                .quiz(quiz)
+                .question(question)
                 .build();
-
-        // 양방향 연관관계 설정
-        mapping.changeQuiz(quiz);
-        mapping.changeQuestion(question);
-
-        return mapping;
-    }
-
-    // CustomQuiz와 QuizQuestionMapping 간의 양방향 연관관계 메서드
-    public void changeQuiz(CustomQuiz quiz) {
-        this.quiz = quiz;
-        if (quiz != null && !quiz.getQuizQuestionMappings().contains(this)) {
-            quiz.getQuizQuestionMappings().add(this);
-        }
-    }
-
-    // Question과 QuizQuestionMapping 간의 양방향 연관관계 메서드
-    public void changeQuestion(Question question) {
-        this.question = question;
-        if (question != null && !question.getQuizQuestionMappings().contains(this)) {
-            question.getQuizQuestionMappings().add(this);
-        }
     }
 }
