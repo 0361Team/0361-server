@@ -114,17 +114,9 @@ public class QuizCommandServiceImpl implements QuizCommandService{
 
         // 질문 중복 제거 및 퀴즈에 추가
         for (Question question : questions) {
-            QuizQuestionMapping mapping = QuizQuestionMapping.builder()
-                    .quiz(quiz)
-                    .question(question)
-                    .build();
-
-            question.addQuizQuestionMapping(mapping);
-            quiz.addQuizQuestionMapping(mapping);
+            quiz.addQuestion(question);
         }
 
-        // 총 질문 수 업데이트 및 저장
-        quiz.updateTotalQuestions(questions.size());
         customQuizRepository.save(quiz);
     }
 
