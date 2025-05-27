@@ -132,6 +132,9 @@ public class ClaudeService {
             ChatResponse response = chatModel.call(prompt);
             String responseContent = response.getResult().getOutput().getText();
 
+            // JSON 파싱
+            String cleanJsonString = cleanJsonResponse(responseContent);
+
             List<String> keywords = objectMapper.readValue(
                     responseContent,
                     new TypeReference<List<String>>() {}
@@ -206,6 +209,9 @@ public class ClaudeService {
             ChatResponse response = chatModel.call(prompt);
             String responseContent = response.getResult().getOutput().getText();
 
+            // 마크다운 코드 블록 제거 <- 이 부분 추가!
+            String cleanJsonString = cleanJsonResponse(responseContent);
+
             // JSON 파싱
             return objectMapper.readValue(
                     responseContent,
@@ -214,6 +220,17 @@ public class ClaudeService {
         } catch (Exception e) {
             throw new RuntimeException("AI 모델을 통한 질문 생성에 실패했습니다: " + e.getMessage(), e);
         }
+    }
+
+    private String cleanJsonResponse(String response) {
+        // ```json과 ``` 제거
+        String cleaned = response.trim();
+
+        // 다양한 마크다운 패턴 처리
+        cleaned = cleaned.replaceAll("^```(json)?\\s*", ""); // 시작 부분
+        cleaned = cleaned.replaceAll("\\s*```$", "");        // 끝 부분
+
+        return cleaned.trim();
     }
 
     private String generateSummationByClaude(Long textId, String text) {
