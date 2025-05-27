@@ -37,6 +37,22 @@ public class QuizSession extends BaseTimeEntity {
 
     private LocalDateTime completedAt;
 
+    // User와 QuizSession 간의 양방향 연관관계 메서드
+    public void changUser(User user) {
+        this.user = user;
+        if (user != null && !user.getQuizSessions().contains(this)) {
+            user.getQuizSessions().add(this);
+        }
+    }
+
+    // CustomQuiz와 QuizSession 간의 양방향 연관관계 메서드
+    public void addQuiz(CustomQuiz quiz) {
+        this.quiz = quiz;
+        if (quiz != null && !quiz.getQuizSessions().contains(this)) {
+            quiz.getQuizSessions().add(this);
+        }
+    }
+
     public static QuizSession create(User user, CustomQuiz quiz) {
         if (user == null) {
             throw new IllegalArgumentException("사용자는 null이 될 수 없습니다");
@@ -51,6 +67,29 @@ public class QuizSession extends BaseTimeEntity {
                 .currentQuestionIndex(0)
                 .completed(false)
                 .build();
+    }
+
+    public UserAnswer createAnswer(String userAnswerText) {
+        Question currentQuestion = getCurrentQuestion();
+        if (currentQuestion == null) {
+            throw new IllegalStateException("세션에 현재 질문이 없습니다");
+        }
+
+        boolean isCorrect = currentQuestion.isCorrectAnswer(userAnswerText);
+
+        UserAnswer userAnswer = UserAnswer.builder()
+                .user(this.user)
+                .question(currentQuestion)
+                .userAnswer(userAnswerText)
+                .isCorrect(isCorrect)
+                .attemptCount(1)
+                .answeredAt(LocalDateTime.now())
+                .build();
+
+        currentQuestion.addUserAnswer(userAnswer);
+        this.user.addUserAnswer(userAnswer);
+
+        return userAnswer;
     }
 
     public void moveToNextQuestion() {
@@ -85,39 +124,5 @@ public class QuizSession extends BaseTimeEntity {
 
     public boolean isComplete() {
         return this.currentQuestionIndex >= this.quiz.getQuizQuestionMappings().size();
-    }
-
-    public UserAnswer createAnswer(String userAnswerText) {
-        Question currentQuestion = getCurrentQuestion();
-        if (currentQuestion == null) {
-            throw new IllegalStateException("세션에 현재 질문이 없습니다");
-        }
-
-        boolean isCorrect = currentQuestion.isCorrectAnswer(userAnswerText);
-
-        return UserAnswer.builder()
-                .user(this.user)
-                .question(currentQuestion)
-                .userAnswer(userAnswerText)
-                .isCorrect(isCorrect)
-                .attemptCount(1)
-                .answeredAt(LocalDateTime.now())
-                .build();
-    }
-
-    // User와 QuizSession 간의 양방향 연관관계 메서드
-    public void changeUser(User user) {
-        this.user = user;
-        if (user != null && !user.getQuizSessions().contains(this)) {
-            user.getQuizSessions().add(this);
-        }
-    }
-
-    // CustomQuiz와 QuizSession 간의 양방향 연관관계 메서드
-    public void changeQuiz(CustomQuiz quiz) {
-        this.quiz = quiz;
-        if (quiz != null && !quiz.getQuizSessions().contains(this)) {
-            quiz.getQuizSessions().add(this);
-        }
     }
 }

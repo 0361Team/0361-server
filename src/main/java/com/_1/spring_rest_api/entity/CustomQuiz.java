@@ -93,24 +93,24 @@ public class CustomQuiz extends BaseTimeEntity {
         // 정적 팩토리 메서드를 통해 매핑 생성 및 양방향 연관관계 설정
         QuizQuestionMapping mapping = QuizQuestionMapping.create(this, question);
 
+        this.addQuizQuestionMapping(mapping);
+
         // 질문 수 증가
         this.updateTotalQuestions(this.totalQuestions + 1);
     }
-
-
 
     // CustomQuiz와 QuizSession 간의 양방향 연관관계 메서드
     public void addQuizSession(QuizSession session) {
         this.quizSessions.add(session);
         if (session.getQuiz() != this) {
-            session.changeQuiz(this);
+            session.addQuiz(this);
         }
     }
 
     public void removeQuizSession(QuizSession session) {
         this.quizSessions.remove(session);
         if (session.getQuiz() == this) {
-            session.changeQuiz(null);
+            session.addQuiz(null);
         }
     }
 

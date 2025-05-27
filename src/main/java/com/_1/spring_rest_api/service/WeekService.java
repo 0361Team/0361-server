@@ -58,12 +58,11 @@ public class WeekService {
         Week week = Week.builder()
                 .title(title)
                 .weekNumber(weekNumber)
-                .course(course)
                 .build();
 
-        week.changeCourse(course);
-        weekRepository.save(week);
+        course.addWeek(week);
 
+        weekRepository.save(week);
         return week.toWeekResponse();
     }
 
@@ -106,7 +105,7 @@ public class WeekService {
 
         // 양방향 연관관계 정리
         if (week.getCourse() != null) {
-            week.getCourse().getWeeks().remove(week);
+            week.getCourse().removeWeek(week);
         }
 
         weekRepository.delete(week);

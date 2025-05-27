@@ -4,7 +4,6 @@ import com._1.spring_rest_api.api.dto.AnswerRequest;
 import com._1.spring_rest_api.api.dto.AnswerResponse;
 import com._1.spring_rest_api.converter.AnswerResponseConverter;
 import com._1.spring_rest_api.converter.QuestionConverter;
-import com._1.spring_rest_api.entity.CustomQuiz;
 import com._1.spring_rest_api.entity.Question;
 import com._1.spring_rest_api.entity.QuizSession;
 import com._1.spring_rest_api.entity.UserAnswer;
@@ -15,8 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -24,7 +21,6 @@ public class QuizSessionCommandServiceImpl implements QuizSessionCommandService 
 
     private final QuizSessionRepository quizSessionRepository;
     private final UserAnswerRepository userAnswerRepository;
-    private final QuestionConverter questionConverter;
     private final AnswerResponseConverter answerResponseConverter;
 
     @Override
@@ -40,8 +36,6 @@ public class QuizSessionCommandServiceImpl implements QuizSessionCommandService 
 
         // 3. 사용자 답변 생성 및 저장
         UserAnswer userAnswer = session.createAnswer(request.getUserAnswer());
-        userAnswer.changeUser(session.getUser());
-        userAnswer.changeQuestion(currentQuestion);
         userAnswerRepository.save(userAnswer);
 
         // 4. 세션 상태 업데이트
