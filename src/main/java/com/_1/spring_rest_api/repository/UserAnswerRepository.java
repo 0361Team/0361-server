@@ -12,18 +12,6 @@ import java.util.List;
 @Repository
 public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
 
-    /**
-     * 특정 사용자의 모든 답변을 조회합니다.
-     *
-     * @param userId 사용자 ID
-     * @return 사용자 답변 목록
-     */
-    @Query("SELECT a FROM UserAnswer a WHERE a.user.id = :userId ORDER BY a.answeredAt DESC")
-    List<UserAnswer> findAllByUserId(@Param("userId") Long userId);
-
-
-    @Query("SELECT ua FROM UserAnswer ua WHERE ua.user.id = :userId AND ua.question.id IN :questionIds")
-    List<UserAnswer> findByUserIdAndQuestionIdIn(
-            @Param("userId") Long userId,
-            @Param("questionIds") Collection<Long> questionIds);
+    @Query("SELECT ua FROM UserAnswer ua WHERE ua.quizSession.id = :sessionId ORDER BY ua.answeredAt ASC")
+    List<UserAnswer> findByQuizSessionIdOrderByAnsweredAt(@Param("sessionId") Long sessionId);
 }
