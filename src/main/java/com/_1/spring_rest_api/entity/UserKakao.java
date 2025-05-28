@@ -39,11 +39,11 @@ public class UserKakao extends BaseTimeEntity {
     private LocalDateTime tokenExpiresAt;
   
     // User와 UserKakao 간의 양방향 연관관계 메서드
-    public void linkWithUser(User user) {
+    public void changeUser(User user) {
         this.user = user;
         // user의 userKakao 필드가 this가 아닌 경우에만 설정
         if (user.getUserKakao() != this) {
-            user.linkWithKakao(this);
+            user.changeUserKakao(this);
         }
     }
 
@@ -65,12 +65,11 @@ public class UserKakao extends BaseTimeEntity {
         }
 
         UserKakao userKakao = UserKakao.builder()
-                .user(user)
                 .kakaoAccountId(kakaoId)
                 .build();
 
         // 양방향 연관관계 설정
-        user.updateUserKakao(userKakao);
+        userKakao.changeUser(user);
 
         return userKakao;
     }

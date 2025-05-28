@@ -91,13 +91,11 @@ public class CustomQuiz extends BaseTimeEntity {
         }
 
         // 정적 팩토리 메서드를 통해 매핑 생성 및 양방향 연관관계 설정
-        QuizQuestionMapping mapping = QuizQuestionMapping.create(this, question);
+        QuizQuestionMapping.create(this, question);
 
         // 질문 수 증가
         this.updateTotalQuestions(this.totalQuestions + 1);
     }
-
-
 
     // CustomQuiz와 QuizSession 간의 양방향 연관관계 메서드
     public void addQuizSession(QuizSession session) {
@@ -111,21 +109,6 @@ public class CustomQuiz extends BaseTimeEntity {
         this.quizSessions.remove(session);
         if (session.getQuiz() == this) {
             session.changeQuiz(null);
-        }
-    }
-
-    // CustomQuiz와 QuizQuestionMapping 간의 양방향 연관관계 메서드
-    public void addQuizQuestionMapping(QuizQuestionMapping mapping) {
-        this.quizQuestionMappings.add(mapping);
-        if (mapping.getQuiz() != this) {
-            mapping.changeQuiz(this);
-        }
-    }
-
-    public void removeQuizQuestionMapping(QuizQuestionMapping mapping) {
-        this.quizQuestionMappings.remove(mapping);
-        if (mapping.getQuiz() == this) {
-            mapping.changeQuiz(null);
         }
     }
 
