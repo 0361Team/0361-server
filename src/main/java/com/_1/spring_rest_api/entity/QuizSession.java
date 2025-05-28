@@ -101,12 +101,14 @@ public class QuizSession extends BaseTimeEntity {
         UserAnswer userAnswer = UserAnswer.builder()
                 .user(this.user)
                 .question(currentQuestion)
+                .quizSession(this)
                 .userAnswer(userAnswerText)
                 .isCorrect(isCorrect)
                 .attemptCount(1)
                 .answeredAt(LocalDateTime.now())
                 .build();
 
+        this.addUserAnswer(userAnswer);
         currentQuestion.addUserAnswer(userAnswer);
         this.user.addUserAnswer(userAnswer);
 
