@@ -45,30 +45,17 @@ public class QuizSessionQueryServiceImpl implements QuizSessionQueryService {
         QuizSession session = quizSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new EntityNotFoundException("Session not found with id: " + sessionId));
 
-        List<UserAnswerResponse> userAnswerResponses = getUserAnswersForSession(session);
+        List<UserAnswerResponse> userAnswerResponses = getUserAnswersForSession(sessionId);
 
         return quizSessionDetailConverter.toDto(session, userAnswerResponses);
     }
 
-    private List<UserAnswerResponse> getUserAnswersForSession(QuizSession session) {
-        CustomQuiz quiz = session.getQuiz();
-        Long userId = session.getUser().getId();
-
-        // 퀴즈에 포함된 질문 ID 집합 추출
-        Set<Long> quizQuestionIds = getQuizQuestionIds(quiz);
-
-        List<UserAnswer> userAnswers = userAnswerRepository.findByUserIdAndQuestionIdIn(
-                userId, quizQuestionIds);
+    private List<UserAnswerResponse> getUserAnswersForSession(Long sessionId) {
+        List<UserAnswer> userAnswers = userAnswerRepository.findByQuizSessionIdOrderByAnsweredAt(sessionId);
 
         // DTO로 변환
         return userAnswers.stream()
                 .map(userAnswerConverter::toDto)
                 .collect(Collectors.toList());
-    }
-
-    private Set<Long> getQuizQuestionIds(CustomQuiz quiz) {
-        return quiz.getQuizQuestionMappings().stream()
-                .map(mapping -> mapping.getQuestion().getId())
-                .collect(Collectors.toSet());
     }
 }
