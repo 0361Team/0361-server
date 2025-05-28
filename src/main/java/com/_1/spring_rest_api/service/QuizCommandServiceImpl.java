@@ -65,15 +65,11 @@ public class QuizCommandServiceImpl implements QuizCommandService{
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
 
         // 새 퀴즈 세션 생성
-        QuizSession session = QuizSession.builder()
-                .user(user)
-                .quiz(quiz)
-                .currentQuestionIndex(0) // 첫 번째 질문부터 시작
-                .build();
+        QuizSession session = QuizSession.create(user, quiz);
 
         // 양방향 연관관계 설정
-        session.changeUser(user);
-        session.changeQuiz(quiz);
+        user.addQuizSession(session);
+        quiz.addQuizSession(session);
 
         // 저장 및 ID 반환
         QuizSession savedSession = quizSessionRepository.save(session);
@@ -97,10 +93,7 @@ public class QuizCommandServiceImpl implements QuizCommandService{
                     .build();
 
             // 양방향 연관관계 설정
-            mapping.changeQuiz(quiz);
-            mapping.changeWeek(week);
-
-            quizWeekMappingRepository.save(mapping);
+            quiz.addQuizWeekMapping(mapping);
         }
     }
 
@@ -124,8 +117,6 @@ public class QuizCommandServiceImpl implements QuizCommandService{
             quiz.addQuestion(question);
         }
 
-        // 총 질문 수 업데이트 및 저장
-        quiz.updateTotalQuestions(questions.size());
         customQuizRepository.save(quiz);
     }
 

@@ -173,7 +173,7 @@ class UserServiceTest {
                 .build();
         UserKakao saved = userKakaoRepository.save(userKakao);
 
-        userKakao.linkWithUser(user);
+        userKakao.changeUser(user);
 
         userRepository.save(user);
 

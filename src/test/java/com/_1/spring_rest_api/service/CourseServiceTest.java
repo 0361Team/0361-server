@@ -11,6 +11,7 @@ import com._1.spring_rest_api.entity.Course;
 import com._1.spring_rest_api.entity.Week;
 import com._1.spring_rest_api.repository.CourseRepository;
 
+import com._1.spring_rest_api.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,9 @@ class CourseServiceTest {
     @Mock
     private CourseRepository courseRepository;
 
+    @Mock
+    private UserRepository userRepository;
+
     @InjectMocks
     private CourseService courseService;
 
@@ -41,7 +45,13 @@ class CourseServiceTest {
 
     @BeforeEach
     void setUp() {
-        testUser = new User(1L);
+        testUser = User.builder()
+                .id(1L)
+                .email("test@example.com")
+                .name("Test User")
+                .isActive(true)
+                .build();
+
         testCourse = new Course(1L, testUser, "Test Course", "Test Description");
         testWeeks = new ArrayList<>();
 
@@ -59,9 +69,11 @@ class CourseServiceTest {
     @DisplayName("코스 생성 성공 테스트")
     void createCourse_Success() {
         // Given
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+
         when(courseRepository.save(any(Course.class))).thenAnswer(invocation -> {
             Course inputCourse = invocation.getArgument(0);
-            ReflectionTestUtils.setField(inputCourse, "id", 1L); // ID 설정
+            ReflectionTestUtils.setField(inputCourse, "id", 1L);
             return inputCourse;
         });
 

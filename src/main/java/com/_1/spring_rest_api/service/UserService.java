@@ -18,6 +18,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UserService {
 
     private final UserRepository userRepository;
@@ -28,12 +29,8 @@ public class UserService {
         return userKakaoOpt.map(UserKakao::getUser).orElse(null);
     }
 
-    @Transactional
     public User createKakaoUser(String email, String name, String kakaoId) {
-        // Create new user
         User user = User.createKakaoUser(email, name);
-
-        // Save user to get ID
         User savedUser = userRepository.save(user);
 
         // Create Kakao account link
@@ -44,7 +41,6 @@ public class UserService {
         return savedUser;
     }
 
-    @Transactional
     public void updateKakaoTokens(User user, String accessToken, String refreshToken, LocalDateTime expiresAt) {
         UserKakao userKakao = user.getUserKakao();
 

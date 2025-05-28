@@ -45,11 +45,11 @@ public class User extends BaseTimeEntity {
     private List<UserAnswer> userAnswers = new ArrayList<>();
 
     // User와 UserKakao 간의 양방향 연관관계 메서드
-    public void linkWithKakao(UserKakao userKakao) {
+    public void changeUserKakao(UserKakao userKakao) {
         this.userKakao = userKakao;
         // userKakao의 user 필드가 this가 아닌 경우에만 설정
         if (userKakao.getUser() != this) {
-            userKakao.linkWithUser(this);
+            userKakao.changeUser(this);
         }
     }
 
@@ -87,14 +87,14 @@ public class User extends BaseTimeEntity {
     public void addQuizSession(QuizSession session) {
         this.quizSessions.add(session);
         if (session.getUser() != this) {
-            session.changeUser(this);
+            session.changUser(this);
         }
     }
 
     public void removeQuizSession(QuizSession session) {
         this.quizSessions.remove(session);
         if (session.getUser() == this) {
-            session.changeUser(null);
+            session.changUser(null);
         }
     }
 
@@ -119,10 +119,6 @@ public class User extends BaseTimeEntity {
 
     public void updateName(String name) {
         this.name = name;
-    }
-
-    public void updateUserKakao(UserKakao userKakao) {
-        this.userKakao = userKakao;
     }
 
     public static User createKakaoUser(String email, String name) {

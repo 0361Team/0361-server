@@ -2,9 +2,15 @@ package com._1.spring_rest_api.converter;
 
 import com._1.spring_rest_api.api.dto.QuestionDto;
 import com._1.spring_rest_api.entity.Question;
+import com._1.spring_rest_api.entity.Week;
 import com._1.spring_rest_api.repository.WeekRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * AI 생성 질문 DTO와 Question 엔티티 간의 변환을 담당하는 컨버터
@@ -39,13 +45,16 @@ public class QuestionGenerationConverter implements Converter<Question, Question
                 .build();
     }
 
-    /**
-     * AI가 생성한 질문 DTO를 특정 주차의 Question 엔티티로 변환
-     *
-     * @param dto    질문 DTO
-     * @param weekId 주차 ID
-     * @return 주차에 연결된 Question 엔티티
-     */
+    public List<Question> createQuestionsForWeek(List<QuestionDto> dtos, Long weekId) {
+        if (dtos == null || dtos.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return dtos.stream()
+                .map(dto -> createQuestionForWeek(dto, weekId))
+                .collect(Collectors.toList());
+    }
+
     public Question createQuestionForWeek(QuestionDto dto, Long weekId) {
         if (dto == null) {
             return null;
@@ -54,9 +63,14 @@ public class QuestionGenerationConverter implements Converter<Question, Question
         Question question = toEntity(dto);
 
         if (weekId != null) {
-            weekRepository.findById(weekId).ifPresent(question::changeWeek);
+            Week week = weekRepository.findById(weekId)
+                    .orElseThrow(() -> new EntityNotFoundException("Week not found with id: " + weekId));
+
+            week.addQuestion(question);
         }
 
         return question;
     }
+
+
 }
