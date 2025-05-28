@@ -112,13 +112,6 @@ public class CustomQuiz extends BaseTimeEntity {
         }
     }
 
-    public void removeQuizQuestionMapping(QuizQuestionMapping mapping) {
-        this.quizQuestionMappings.remove(mapping);
-        if (mapping.getQuiz() == this) {
-            mapping.changeQuiz(null);
-        }
-    }
-
     // CustomQuiz와 QuizWeekMapping 간의 양방향 연관관계 메서드
     public void addQuizWeekMapping(QuizWeekMapping mapping) {
         this.quizWeekMappings.add(mapping);
