@@ -90,8 +90,14 @@ public class CustomQuiz extends BaseTimeEntity {
             return; // 이미 추가된 질문이면 무시
         }
 
-        // 정적 팩토리 메서드를 통해 매핑 생성 및 양방향 연관관계 설정
-        QuizQuestionMapping.create(this, question);
+        // 매핑 생성 및 양방향 연관관계 설정
+        QuizQuestionMapping mapping = QuizQuestionMapping.builder()
+                .quiz(this)
+                .question(question)
+                .build();
+
+        this.quizQuestionMappings.add(mapping);
+        question.getQuizQuestionMappings().add(mapping);
 
         // 질문 수 증가
         this.updateTotalQuestions(this.totalQuestions + 1);

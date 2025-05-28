@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -42,7 +43,7 @@ public class QuizCommandServiceImpl implements QuizCommandService{
         connectWeeksToQuiz(request.getWeekIds(), savedQuiz);
 
         // 질문 처리
-        processQuestions(request, savedQuiz);
+        processQuestionsWithFreshEntities(request, savedQuiz);
 
         return savedQuiz.getId();
     }
@@ -98,43 +99,33 @@ public class QuizCommandServiceImpl implements QuizCommandService{
     }
 
     // 질문 처리 로직
-    private void processQuestions(CreateQuizRequest request, CustomQuiz quiz) {
-        Set<Question> questions = new HashSet<>();
-
-        // 주차 기반 질문 선택
-        if (request.getWeekIds() != null && !request.getWeekIds().isEmpty()) {
-            // 선택된 모든 주차의 질문 가져오기
-            List<Question> weekQuestions = getQuestionList(request);
-
-            // 질문 수 제한이 있는 경우 랜덤 선택
-            weekQuestions = getRandomQuestionsIfHasLimit(request, weekQuestions);
-
-            questions.addAll(weekQuestions);
+    private void processQuestionsWithFreshEntities(CreateQuizRequest request, CustomQuiz quiz) {
+        if (request.getWeekIds() == null || request.getWeekIds().isEmpty()) {
+            return;
         }
 
-        // 질문 중복 제거 및 퀴즈에 추가
-        for (Question question : questions) {
+        // 👇 week별로 질문 ID만 수집
+        List<Long> questionIds = new ArrayList<>();
+        for (Long weekId : request.getWeekIds()) {
+            List<Long> weekQuestionIds = questionRepository.findAllByWeekId(weekId)
+                    .stream()
+                    .map(Question::getId)
+                    .toList();
+            questionIds.addAll(weekQuestionIds);
+        }
+
+        // 랜덤 선택
+        if (request.getQuestionCount() != null && request.getQuestionCount() > 0 &&
+                request.getQuestionCount() < questionIds.size()) {
+            Collections.shuffle(questionIds);
+            questionIds = questionIds.subList(0, request.getQuestionCount());
+        }
+
+        List<Question> freshQuestions = questionRepository.findAllById(questionIds);
+
+        for (Question question : freshQuestions) {
             quiz.addQuestion(question);
         }
-
-        customQuizRepository.save(quiz);
     }
 
-    private static List<Question> getRandomQuestionsIfHasLimit(CreateQuizRequest request, List<Question> weekQuestions) {
-        if (request.getQuestionCount() != null && request.getQuestionCount() > 0 &&
-                request.getQuestionCount() < weekQuestions.size()) {
-            // 무작위 선택
-            Collections.shuffle(weekQuestions);
-            weekQuestions = weekQuestions.subList(0, request.getQuestionCount());
-        }
-        return weekQuestions;
-    }
-
-    private List<Question> getQuestionList(CreateQuizRequest request) {
-        List<Question> weekQuestions = new ArrayList<>();
-        for (Long weekId : request.getWeekIds()) {
-            weekQuestions.addAll(questionRepository.findAllByWeekId(weekId));
-        }
-        return weekQuestions;
-    }
 }

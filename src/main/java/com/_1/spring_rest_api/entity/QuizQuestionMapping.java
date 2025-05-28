@@ -27,11 +27,4 @@ public class QuizQuestionMapping extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_id")
     private Question question;
-
-    public static QuizQuestionMapping create(CustomQuiz quiz, Question question) {
-        return QuizQuestionMapping.builder()
-                .quiz(quiz)
-                .question(question)
-                .build();
-    }
 }
