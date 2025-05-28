@@ -46,7 +46,7 @@ public class QuizSession extends BaseTimeEntity {
     }
 
     // CustomQuiz와 QuizSession 간의 양방향 연관관계 메서드
-    public void addQuiz(CustomQuiz quiz) {
+    public void changeQuiz(CustomQuiz quiz) {
         this.quiz = quiz;
         if (quiz != null && !quiz.getQuizSessions().contains(this)) {
             quiz.getQuizSessions().add(this);
