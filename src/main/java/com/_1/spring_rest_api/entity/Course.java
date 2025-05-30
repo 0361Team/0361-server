@@ -35,7 +35,7 @@ public class Course extends BaseTimeEntity {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @OneToMany(mappedBy = "course")
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Week> weeks = new ArrayList<>();
 
