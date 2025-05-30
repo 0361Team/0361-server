@@ -29,22 +29,17 @@ public class KakaoAuthService {
             KakaoUserInfo kakaoUserInfo =
                     kakaoApiClientService.getUserInfo(request.getAccessToken());
 
-            // 2. 카카오 ID가 일치하는지 검증 (보안 강화)
-            if (!kakaoUserInfo.getKakaoId().equals(request.getKakaoId())) {
-                throw new RuntimeException("카카오 사용자 ID가 일치하지 않습니다.");
-            }
-
-            // 3. 기존 사용자 조회 또는 신규 사용자 생성
+            // 2. 기존 사용자 조회 또는 신규 사용자 생성
             User user = findOrCreateUser(kakaoUserInfo);
 
-            // 4. 카카오 토큰 정보 업데이트
+            // 3. 카카오 토큰 정보 업데이트
             updateKakaoTokens(user, request);
 
-            // 5. JWT 토큰 생성
+            // 4. JWT 토큰 생성
             UserDetails userDetails = userService.createUserDetails(user);
             String jwtToken = jwtService.generateToken(userDetails);
 
-            // 6. 응답 생성
+            // 5. 응답 생성
             return buildAuthResponse(jwtToken, user);
 
         } catch (Exception e) {

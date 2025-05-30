@@ -17,8 +17,5 @@ public class KakaoAuthRequest {
 
     private String refreshToken;
 
-    @NotEmpty(message = "카카오 사용자 ID는 필수입니다")
-    private String kakaoId;
-
     private Long expiresIn; // 토큰 만료 시간(초)
 }
