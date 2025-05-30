@@ -41,14 +41,13 @@ public class QuestionCommandServiceImpl implements QuestionCommandService {
         List<QuestionDto> generatedQuestions =
                 claudeService.generateQuestionsFromWeekTexts(weekId, minQuestionCount);
 
-        // 생성된 질문을 저장 (컨버터 활용)
-        List<Long> savedQuestionIds = generatedQuestions.stream()
-                .map(dto -> questionGenerationConverter.createQuestionForWeek(dto, weekId))
+        List<Question> questions = questionGenerationConverter.createQuestionsForWeek(
+                generatedQuestions, weekId);
+
+        return questions.stream()
                 .map(questionRepository::save)
                 .map(Question::getId)
                 .collect(Collectors.toList());
-
-        return savedQuestionIds;
     }
 
 

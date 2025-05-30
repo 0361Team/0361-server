@@ -4,6 +4,7 @@ import com._1.spring_rest_api.entity.Course;
 import com._1.spring_rest_api.entity.User;
 import com._1.spring_rest_api.entity.Week;
 import com._1.spring_rest_api.repository.CourseRepository;
+import com._1.spring_rest_api.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,11 +18,21 @@ import java.util.List;
 public class CourseService {
 
     private final CourseRepository courseRepository;
+    private final UserRepository userRepository;
 
-    public Long createCourse(
-            Long userId, String title, String description) {
-        // User entity 조회 후 넣어야 함. - 임시로 User() 사용
-        Course course = courseRepository.save(new Course(new User(userId), title, description));
+    public Long createCourse(Long userId, String title, String description) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+
+        Course course = Course.builder()
+                .creator(user)
+                .title(title)
+                .description(description)
+                .build();
+
+        user.addCourse(course);
+
+        Course savedCourse = courseRepository.save(course);
         return course.getId();
     }
 

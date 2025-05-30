@@ -6,6 +6,7 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -13,6 +14,9 @@ import java.util.List;
 
 @Configuration    // 스프링 실행시 설정파일 읽어드리기 위한 어노테이션
 public class SwaggerConfig {
+
+    @Value("${api.server.url}")
+    private String serverApiUrl;
 
     @Bean
     public OpenAPI openAPI() {
@@ -24,14 +28,11 @@ public class SwaggerConfig {
                 .in(SecurityScheme.In.HEADER)
                 .name("Authorization");
 
-        // 보안 요구사항 설정
-        SecurityRequirement securityRequirement = new SecurityRequirement().addList("JWT");
-
         return new OpenAPI()
                 .components(new Components().addSecuritySchemes("JWT", jwtScheme))
-                .addSecurityItem(securityRequirement)
+                .addSecurityItem(new SecurityRequirement().addList("JWT"))
                 .info(apiInfo())
-                .servers(List.of(new Server().url("https://spring-container-620597935007.us-central1.run.app"))); // HTTPS 명시
+                .servers(List.of(new Server().url(serverApiUrl)));  // 환경 변수에서 가져온 URL 사용
     }
 
     private Info apiInfo() {

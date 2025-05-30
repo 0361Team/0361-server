@@ -29,8 +29,10 @@ public class QuizQueryServiceImpl implements QuizQueryService{
 
     @Override
     public QuizDetailResponse getQuizDetail(Long quizId) {
-        CustomQuiz quiz = customQuizRepository.findById(quizId)
+        CustomQuiz quiz = customQuizRepository.findByIdWithQuestions(quizId)
                 .orElseThrow(() -> new EntityNotFoundException("Quiz not found with id: " + quizId));
+
+        customQuizRepository.findByIdWithWeeks(quizId);
 
         return convertToDetailResponse(quiz);
     }

@@ -62,14 +62,6 @@ public class Course extends BaseTimeEntity {
         }
     }
 
-
-    public Course(User creator, String title, String description) {
-        this.creator = creator;
-        this.title = title;
-        this.description = description;
-        this.weeks = new ArrayList<>();
-    }
-
     public Course(Long id, User creator, String title, String description) {
         this.id = id;
         this.creator = creator;

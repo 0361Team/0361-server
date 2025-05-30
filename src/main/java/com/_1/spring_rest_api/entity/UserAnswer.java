@@ -31,6 +31,10 @@ public class UserAnswer extends BaseTimeEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "quiz_session_id")
+    private QuizSession quizSession; // 추가
+
     @Column(name = "user_answer", columnDefinition = "TEXT")
     private String userAnswer;
 
@@ -56,6 +60,13 @@ public class UserAnswer extends BaseTimeEntity {
         this.question = question;
         if (question != null && !question.getUserAnswers().contains(this)) {
             question.getUserAnswers().add(this);
+        }
+    }
+
+    public void changeQuizSession(QuizSession quizSession) {
+        this.quizSession = quizSession;
+        if (quizSession != null && !quizSession.getUserAnswers().contains(this)) {
+            quizSession.getUserAnswers().add(this);
         }
     }
 }

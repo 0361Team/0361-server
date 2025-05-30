@@ -58,6 +58,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+        if(CorsUtils.isPreFlightRequest(request)) {
+            response.setStatus(HttpServletResponse.SC_OK);
+            return;
+        }
+
         jwt = authHeader.substring(7);
         userEmail = jwtService.extractUsername(jwt);
 

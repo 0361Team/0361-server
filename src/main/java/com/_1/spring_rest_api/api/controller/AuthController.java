@@ -1,27 +1,48 @@
 package com._1.spring_rest_api.api.controller;
 
+import com._1.spring_rest_api.api.dto.KakaoAuthRequest;
+import com._1.spring_rest_api.api.dto.KakaoAuthResponse;
+import com._1.spring_rest_api.service.KakaoAuthService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.GetMapping;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.view.RedirectView;
 
 @RestController
 @RequestMapping("/api/public/auth")
+@RequiredArgsConstructor
 @Tag(name = "인증 API", description = "사용자 인증 관련 API")
 public class AuthController {
 
-    @GetMapping("/kakao")
+    private final KakaoAuthService kakaoAuthService;
+
+    @PostMapping("/kakao/token")
     @Operation(
-            summary = "카카오 OAuth2 로그인",
-            description = "카카오 OAuth2 인증 페이지로 리다이렉트합니다. 사용자가 카카오 계정으로 로그인하면 설정된 콜백 URL로 인증 코드와 함께 리다이렉트됩니다."
+            summary = "카카오 토큰 인증 (iOS/모바일용)",
+            description = "iOS SDK에서 받은 카카오 액세스 토큰을 검증하고 JWT 토큰을 발급합니다."
     )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "인증 성공 - JWT 토큰 발급됨"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 - 필수 필드 누락"),
+            @ApiResponse(responseCode = "401", description = "인증 실패 - 유효하지 않은 카카오 토큰"),
+            @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+    })
     @SecurityRequirements
-    public RedirectView kakaoLogin() {
-        RedirectView redirectView = new RedirectView();
-        redirectView.setUrl("/oauth2/authorization/kakao");
-        return redirectView;
+    public ResponseEntity<KakaoAuthResponse> authenticateWithKakaoToken(
+            @Valid @RequestBody KakaoAuthRequest request) {
+
+        KakaoAuthResponse response = kakaoAuthService.authenticateWithKakao(request);
+        return ResponseEntity.ok(response);
     }
+
 }

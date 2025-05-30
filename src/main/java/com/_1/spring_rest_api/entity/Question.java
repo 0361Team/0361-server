@@ -51,21 +51,6 @@ public class Question extends BaseTimeEntity {
         }
     }
 
-    // Question과 QuizQuestionMapping 간의 양방향 연관관계 메서드
-    public void addQuizQuestionMapping(QuizQuestionMapping mapping) {
-        this.quizQuestionMappings.add(mapping);
-        if (mapping.getQuestion() != this) {
-            mapping.changeQuestion(this);
-        }
-    }
-
-    public void removeQuizQuestionMapping(QuizQuestionMapping mapping) {
-        this.quizQuestionMappings.remove(mapping);
-        if (mapping.getQuestion() == this) {
-            mapping.changeQuestion(null);
-        }
-    }
-
     // Question과 UserAnswer 간의 양방향 연관관계 메서드
     public void addUserAnswer(UserAnswer userAnswer) {
         this.userAnswers.add(userAnswer);
@@ -89,5 +74,9 @@ public class Question extends BaseTimeEntity {
                 .front(this.front) // 필드명 변경
                 .back(this.back) // 필드명 변경
                 .build();
+    }
+
+    public boolean isCorrectAnswer(String answer) {
+        return this.back.trim().equalsIgnoreCase(answer.trim());
     }
 }
