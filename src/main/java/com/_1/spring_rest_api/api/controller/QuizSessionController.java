@@ -81,7 +81,6 @@ public class QuizSessionController {
             @ApiResponse(responseCode = "200", description = "배치 삭제 완료 (일부 실패 포함 가능)"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청 (세션 ID 목록이 비어있거나 너무 많음)"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자 (JWT 토큰 없음 또는 유효하지 않음)"),
-            @ApiResponse(responseCode = "403", description = "권한 없음 (다른 사용자의 세션 삭제 시도)")
     })
     public ResponseEntity<DeleteSessionsResponse> deleteSessions(
             @Valid @RequestBody DeleteSessionsRequest request) {
@@ -94,9 +93,6 @@ public class QuizSessionController {
             // JWT 토큰이 없거나 유효하지 않은 경우
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-        } catch (SecurityException e) {
-            // 다른 사용자의 세션을 삭제하려고 하는 경우
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
 }

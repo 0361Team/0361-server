@@ -88,9 +88,6 @@ public class QuizSessionCommandServiceImpl implements QuizSessionCommandService 
             try {
                 QuizSession session = findSessionById(sessionId);
 
-                // 권한 검증 - 세션 소유자와 현재 사용자가 일치하는지 확인
-                validateUserPermission(session, currentUser);
-
                 quizSessionRepository.delete(session);
                 deletedSessionIds.add(sessionId);
 
@@ -99,9 +96,6 @@ public class QuizSessionCommandServiceImpl implements QuizSessionCommandService 
             } catch (EntityNotFoundException e) {
                 failures.add(createFailure(sessionId, "세션을 찾을 수 없습니다", "SESSION_NOT_FOUND"));
                 log.warn("세션을 찾을 수 없음: sessionId={}", sessionId);
-            } catch (SecurityException e) {
-                failures.add(createFailure(sessionId, "삭제 권한이 없습니다", "PERMISSION_DENIED"));
-                log.warn("권한 없는 삭제 시도: sessionId={}, userId={}", sessionId, currentUser.getId());
             } catch (Exception e) {
                 log.error("세션 삭제 중 예상치 못한 오류: sessionId={}", sessionId, e);
                 failures.add(createFailure(sessionId, "알 수 없는 오류가 발생했습니다", "UNKNOWN_ERROR"));
@@ -137,12 +131,6 @@ public class QuizSessionCommandServiceImpl implements QuizSessionCommandService 
     private QuizSession findSessionById(Long sessionId) {
         return quizSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new EntityNotFoundException("Session not found with id: " + sessionId));
-    }
-
-    private void validateUserPermission(QuizSession session, User user) {
-        if (!session.getUser().getId().equals(user.getId())) {
-            throw new SecurityException("해당 세션에 대한 삭제 권한이 없습니다.");
-        }
     }
 
     private DeleteSessionsResponse.SessionDeleteFailure createFailure(Long sessionId, String reason, String errorCode) {
