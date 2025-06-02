@@ -2,11 +2,11 @@ package com._1.spring_rest_api.entity;
 
 import com._1.spring_rest_api.entity.base.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "TEXT")
@@ -21,10 +21,6 @@ public class Text extends BaseTimeEntity {
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "week_id")
-    private Week week;
-
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
@@ -35,12 +31,30 @@ public class Text extends BaseTimeEntity {
     @Column(name = "type")
     private String type;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "week_id")
+    private Week week;
+
+    @OneToMany(mappedBy = "text", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Keyword> keywords = new ArrayList<>();
+
     // Week와 Text 간의 양방향 연관관계 메서드
     public void changeWeek(Week week) {
         this.week = week;
         if (week != null && !week.getTexts().contains(this)) {
             week.getTexts().add(this);
         }
+    }
+
+    public void addKeyword(Keyword keyword) {
+        this.keywords.add(keyword);
+        keyword.changeText(this);
+    }
+
+    public void removeKeyword(Keyword keyword) {
+        this.keywords.remove(keyword);
+        keyword.changeText(null);
     }
 
     // 컨텐츠 업데이트 메서드
