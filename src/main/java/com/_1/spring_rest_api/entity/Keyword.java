@@ -24,4 +24,11 @@ public class Keyword {
     @ManyToOne
     @JoinColumn(name = "TEXT_id")
     private Text text;
+
+    public void changeText(Text text) {
+        this.text = text;
+        if (text != null && !text.getKeywords().contains(this)) {
+            text.getKeywords().add(this);
+        }
+    }
 }
