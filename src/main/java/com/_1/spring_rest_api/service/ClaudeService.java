@@ -195,6 +195,8 @@ public class ClaudeService {
                   \\}>
                   ...
                 ]
+                7. 응답은 반드시 순수한 JSON 배열 형태로만 제공해주세요.
+                8. markdown 코드 블록이나 추가 설명 없이 JSON만 반환해주세요.
                 """.formatted(minQuestionCount);
 
         Message systemMessage = new SystemMessage(systemPrompt);
@@ -209,7 +211,6 @@ public class ClaudeService {
             ChatResponse response = chatModel.call(prompt);
             String responseContent = response.getResult().getOutput().getText();
 
-            // 마크다운 코드 블록 제거 <- 이 부분 추가!
             String cleanJsonString = cleanJsonResponse(responseContent);
 
             // JSON 파싱
