@@ -195,6 +195,8 @@ public class ClaudeService {
                   \\}>
                   ...
                 ]
+                7. 응답은 반드시 순수한 JSON 배열 형태로만 제공해주세요.
+                8. markdown 코드 블록이나 추가 설명 없이 JSON만 반환해주세요.
                 """.formatted(minQuestionCount);
 
         Message systemMessage = new SystemMessage(systemPrompt);
@@ -209,12 +211,11 @@ public class ClaudeService {
             ChatResponse response = chatModel.call(prompt);
             String responseContent = response.getResult().getOutput().getText();
 
-            // 마크다운 코드 블록 제거 <- 이 부분 추가!
             String cleanJsonString = cleanJsonResponse(responseContent);
 
             // JSON 파싱
             return objectMapper.readValue(
-                    responseContent,
+                    cleanJsonString,
                     new TypeReference<List<QuestionDto>>() {}
             );
         } catch (Exception e) {
@@ -223,14 +224,32 @@ public class ClaudeService {
     }
 
     private String cleanJsonResponse(String response) {
-        // ```json과 ``` 제거
+        if (response == null || response.trim().isEmpty()) {
+            throw new IllegalArgumentException("AI 응답이 비어있습니다.");
+        }
+
         String cleaned = response.trim();
 
-        // 다양한 마크다운 패턴 처리
-        cleaned = cleaned.replaceAll("^```(json)?\\s*", ""); // 시작 부분
-        cleaned = cleaned.replaceAll("\\s*```$", "");        // 끝 부분
+        // markdown 코드 블록 제거 (```json과 ```)
+        if (cleaned.startsWith("```json")) {
+            cleaned = cleaned.substring(7); // "```json" 제거
+        } else if (cleaned.startsWith("```")) {
+            cleaned = cleaned.substring(3); // "```" 제거
+        }
 
-        return cleaned.trim();
+        if (cleaned.endsWith("```")) {
+            cleaned = cleaned.substring(0, cleaned.length() - 3); // 마지막 "```" 제거
+        }
+
+        // 앞뒤 공백 제거
+        cleaned = cleaned.trim();
+
+        // JSON 유효성 기본 검증
+        if (!cleaned.startsWith("[") && !cleaned.startsWith("{")) {
+            throw new IllegalArgumentException("유효하지 않은 JSON 형식입니다: " + cleaned.substring(0, Math.min(100, cleaned.length())));
+        }
+
+        return cleaned;
     }
 
     private String generateSummationByClaude(Long textId, String text) {
