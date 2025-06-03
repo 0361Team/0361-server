@@ -214,7 +214,7 @@ public class ClaudeService {
 
             // JSON 파싱
             return objectMapper.readValue(
-                    responseContent,
+                    cleanJsonString,
                     new TypeReference<List<QuestionDto>>() {}
             );
         } catch (Exception e) {
