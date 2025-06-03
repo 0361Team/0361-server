@@ -223,14 +223,32 @@ public class ClaudeService {
     }
 
     private String cleanJsonResponse(String response) {
-        // ```json과 ``` 제거
+        if (response == null || response.trim().isEmpty()) {
+            throw new IllegalArgumentException("AI 응답이 비어있습니다.");
+        }
+
         String cleaned = response.trim();
 
-        // 다양한 마크다운 패턴 처리
-        cleaned = cleaned.replaceAll("^```(json)?\\s*", ""); // 시작 부분
-        cleaned = cleaned.replaceAll("\\s*```$", "");        // 끝 부분
+        // markdown 코드 블록 제거 (```json과 ```)
+        if (cleaned.startsWith("```json")) {
+            cleaned = cleaned.substring(7); // "```json" 제거
+        } else if (cleaned.startsWith("```")) {
+            cleaned = cleaned.substring(3); // "```" 제거
+        }
 
-        return cleaned.trim();
+        if (cleaned.endsWith("```")) {
+            cleaned = cleaned.substring(0, cleaned.length() - 3); // 마지막 "```" 제거
+        }
+
+        // 앞뒤 공백 제거
+        cleaned = cleaned.trim();
+
+        // JSON 유효성 기본 검증
+        if (!cleaned.startsWith("[") && !cleaned.startsWith("{")) {
+            throw new IllegalArgumentException("유효하지 않은 JSON 형식입니다: " + cleaned.substring(0, Math.min(100, cleaned.length())));
+        }
+
+        return cleaned;
     }
 
     private String generateSummationByClaude(Long textId, String text) {
